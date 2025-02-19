@@ -9,13 +9,16 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
-from pathlib import Path
 import environ
+import os
+from pathlib import Path
+
 
 # Initialize environment variables
 env = environ.Env()
-environ.Env.read_env()  # Reads the .env file
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))  # Read .env configs
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
