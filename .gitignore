@@ -1,0 +1,21 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# OS-specific files
+.DS_Store
+
+# Ignore migrations' pycache files
+*/migrations/__pycache__/
+
+# IDE/editor directories and files
+.idea/
+.vscode/
+
+# Django log files
+*.log
+
+# Cache
+__pycache__/
+MyDB/__pycache__/
