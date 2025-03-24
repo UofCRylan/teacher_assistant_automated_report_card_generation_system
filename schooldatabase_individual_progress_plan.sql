@@ -41,6 +41,7 @@ CREATE TABLE `individual_progress_plan` (
 
 LOCK TABLES `individual_progress_plan` WRITE;
 /*!40000 ALTER TABLE `individual_progress_plan` DISABLE KEYS */;
+INSERT INTO `individual_progress_plan` VALUES (25,3,'Improve reading comprehension by 2 grade levels','Dyslexia','Text-to-speech software'),(26,5,'Enhance fine motor skills for better handwriting','Developmental Coordination Disorder','Occupational therapy tools'),(27,7,'Improve focus in classroom settings','ADHD','Noise-cancelling headphones'),(28,9,'Enhance basic math fluency','Dyscalculia','Math manipulatives'),(29,12,'Support social skill development','Autism Spectrum Disorder','Peer mentoring program'),(30,15,'Develop expressive language abilities','Speech delay','Speech therapy sessions'),(31,18,'Increase attention span during lessons','ADHD','Frequent breaks and visual timers'),(32,22,'Build reading fluency and comprehension','Learning disability','Guided reading materials');
 /*!40000 ALTER TABLE `individual_progress_plan` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -53,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-15  1:47:06
+-- Dump completed on 2025-03-23 22:21:48

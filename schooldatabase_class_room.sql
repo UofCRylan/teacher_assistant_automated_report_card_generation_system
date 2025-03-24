@@ -37,6 +37,7 @@ CREATE TABLE `class_room` (
 
 LOCK TABLES `class_room` WRITE;
 /*!40000 ALTER TABLE `class_room` DISABLE KEYS */;
+INSERT INTO `class_room` VALUES (1,28,'A','101'),(2,27,'A','102'),(3,28,'A','103'),(4,27,'A','104'),(5,30,'A','105'),(6,27,'A','106'),(7,38,'B','201'),(8,35,'B','202'),(9,42,'B','203'),(10,27,'B','204'),(11,60,'B','205'),(12,55,'B','206'),(13,29,'B','207'),(14,28,'B','208'),(15,27,'B','209');
 /*!40000 ALTER TABLE `class_room` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -49,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-15  1:47:06
+-- Dump completed on 2025-03-23 22:21:48

@@ -35,6 +35,7 @@ CREATE TABLE `final_grade` (
 
 LOCK TABLES `final_grade` WRITE;
 /*!40000 ALTER TABLE `final_grade` DISABLE KEYS */;
+INSERT INTO `final_grade` VALUES ('A','Excellent'),('A-','Very Good'),('A+','Outstanding'),('B','Above Average'),('B-','Fair'),('B+','Good'),('C','Average'),('C-','Boderline'),('C+','Satisfactory'),('D','Poor'),('D-','Very Poor'),('D+','Weak'),('F','Failing');
 /*!40000 ALTER TABLE `final_grade` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -47,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-15  1:47:07
+-- Dump completed on 2025-03-23 22:21:48
