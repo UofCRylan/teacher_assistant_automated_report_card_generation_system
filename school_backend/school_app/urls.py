@@ -1,0 +1,32 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('address/', views.address_view, name='address_view'),
+    path('assigned/', views.assigned_view, name='assigned_view'),
+    path('attendance/', views.attendance_view, name='attendance_view'),
+    path('authgroup/', views.authgroup_view, name='authgroup_view'),
+    path('authgrouppermissions/', views.authgrouppermissions_view, name='authgrouppermissions_view'),
+    path('authpermission/', views.authpermission_view, name='authpermission_view'),
+    path('authuser/', views.authuser_view, name='authuser_view'),
+    path('authusergroups/', views.authusergroups_view, name='authusergroups_view'),
+    path('authuseruserpermissions/', views.authuseruserpermissions_view, name='authuseruserpermissions_view'),
+    path('class/', views.class_view, name='class_view'),
+    path('classroom/', views.classroom_view, name='classroom_view'),
+    path('djangoadminlog/', views.djangoadminlog_view, name='djangoadminlog_view'),
+    path('djangocontenttype/', views.djangocontenttype_view, name='djangocontenttype_view'),
+    path('djangomigrations/', views.djangomigrations_view, name='djangomigrations_view'),
+    path('djangosession/', views.djangosession_view, name='djangosession_view'),
+    path('educates/', views.educates_view, name='educates_view'),
+    path('feedback/', views.feedback_view, name='feedback_view'),
+    path('finalgrade/', views.finalgrade_view, name='finalgrade_view'),
+    path('includes/', views.includes_view, name='includes_view'),
+    path('individualprogressplan/', views.individualprogressplan_view, name='individualprogressplan_view'),
+    path('recievesfeedback/', views.recievesfeedback_view, name='recievesfeedback_view'),
+    path('recievesgrade/', views.recievesgrade_view, name='recievesgrade_view'),
+    path('schedule/', views.schedule_view, name='schedule_view'),
+    path('scheduled/', views.scheduled_view, name='scheduled_view'),
+    path('schoolmember/', views.schoolmember_view, name='schoolmember_view'),
+    path('student/', views.student_view, name='student_view'),
+    path('teacher/', views.teacher_view, name='teacher_view'),
+]
