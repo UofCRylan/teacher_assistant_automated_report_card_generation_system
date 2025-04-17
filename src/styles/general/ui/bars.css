@@ -1,0 +1,41 @@
+.side-bar {
+  min-width: 200px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  border-radius: 5px 0px 5px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.option {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  border-radius: 5px;
+  padding: 10px;
+  box-sizing: border-box;
+  height: 50px;
+}
+
+.option.selected {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.option.selected {
+  background-color: #023e8a;
+  color: white;
+}
+
+.option:hover {
+  background-color: rgb(200, 200, 200);
+  cursor: pointer;
+}
+
+.option.selected:hover {
+  background-color: #044fb3;
+}

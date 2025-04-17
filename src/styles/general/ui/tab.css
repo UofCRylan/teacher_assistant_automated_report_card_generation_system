@@ -1,0 +1,36 @@
+.tab {
+  color: grey;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  align-items: center;
+  box-sizing: border-box;
+  padding: 10px;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  text-decoration: none;
+}
+
+.tab.active,
+.tab.active svg {
+  color: var(--primary-colour);
+  fill: var(--primary-colour);
+}
+
+.tab:hover {
+  background-color: #eeeeee;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.tab.active:hover {
+  background-color: transparent;
+  cursor: pointer;
+}
+
+a {
+  text-decoration: none;
+}

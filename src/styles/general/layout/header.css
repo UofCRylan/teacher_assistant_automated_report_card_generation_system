@@ -1,0 +1,87 @@
+.header {
+  width: 100%;
+  height: var(--header-height);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.header > div {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 25px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  box-sizing: border-box;
+}
+
+#manage-section {
+  position: relative;
+  background: none;
+  border: none;
+}
+
+#manage-section:hover {
+  cursor: pointer;
+}
+
+#manage-dropdown {
+  border-radius: 50%;
+  box-sizing: border-box;
+  padding: 1px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(20%, 20%);
+  background-color: #ffffff;
+}
+
+#manage-dropdown:hover {
+  background-color: #dedede;
+}
+
+#manage-container {
+  display: hidden;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  border-radius: 10px;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 10px;
+  width: 20em;
+  max-height: 25em;
+  position: absolute;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  justify-content: flex-start;
+}
+
+#manage-container > div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 15px 6px;
+}
+
+#manage-container > div:hover {
+  background-color: rgb(198, 198, 198);
+  cursor: pointer;
+}
+
+#manage-container > div > span {
+  padding: 5px;
+}

@@ -1,0 +1,22 @@
+.button {
+  background-color: var(--primary-colour);
+  margin: 0;
+  border: none;
+  border-radius: 10px;
+  line-height: 48px;
+  padding: 0 16px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+  text-shadow: none;
+  vertical-align: middle;
+}
+
+.button:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}

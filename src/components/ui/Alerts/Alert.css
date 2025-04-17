@@ -1,0 +1,29 @@
+.alert {
+  display: flex;
+  padding: 10px;
+  box-sizing: border-box;
+  align-items: center;
+  gap: 5px;
+  border-radius: 5px;
+  color: #000000;
+}
+
+.alert.success {
+  background-color: rgb(104, 255, 112);
+  border: 1px solid rgb(72, 253, 81);
+}
+
+.alert.warning {
+  background-color: rgb(253, 255, 107);
+  border: 1px solid rgb(252, 255, 83);
+}
+
+.alert.error {
+  background-color: rgb(255, 116, 116);
+  border: 1px solid rgb(255, 79, 79);
+}
+
+.alert.info {
+  background-color: rgb(100, 185, 255);
+  border: 1px solid rgb(76, 174, 255);
+}
