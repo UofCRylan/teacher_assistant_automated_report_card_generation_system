@@ -285,7 +285,6 @@ def authuser_view(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
-
 # 8) AuthUserGroups
 
 @csrf_exempt
@@ -883,4 +882,108 @@ def teacher_view(request):
 
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
 
+
+#28) Report Card Generation
+
+import io, json
+from pathlib import Path
+from datetime import date
+from django.conf                import settings
+from django.http                import JsonResponse, HttpResponseNotAllowed
+from django.views.decorators.csrf import csrf_exempt
+from reportlab.lib              import colors
+from reportlab.lib.pagesizes    import letter
+from reportlab.lib.styles       import getSampleStyleSheet
+from reportlab.platypus         import (SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer)
+from .models import Student, ReceiveGrade      
+
+
+@csrf_exempt
+def reportcard_view(request):
+    """
+    POST /api/reportcard   { "student_id": 321 }
+    → {"pdf_url": "/media/reports/reportcard_321_2025‑04‑19.pdf"}
+    """
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    try:
+        payload    = json.loads(request.body or "{}")
+        student_id = int(payload["student_id"])
+    except (KeyError, ValueError, TypeError):
+        return JsonResponse({"error": "student_id (int) required"}, status=400)
+
+    try:
+        student = Student.objects.select_related("studentid").get(pk=student_id)
+    except Student.DoesNotExist:
+        return JsonResponse({"error": "student not found"}, status=404)
+
+    grades_qs = (
+        ReceiveGrade.objects
+        .filter(studentid=student)
+        .select_related("letter", "class_number", "section")
+        .order_by("class_number__class_number")
+    )
+
+    buffer = io.BytesIO()
+    doc    = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=40, leftMargin=40,
+        topMargin=60,  bottomMargin=40,
+        title=f"Report Card {student_id}"
+    )
+    styles = getSampleStyleSheet()
+    story  = []
+
+    story.append(
+        Paragraph(
+            f"Report Card – {student.studentid.first_name} "
+            f"{student.studentid.last_name}",
+            styles["Title"]
+        )
+    )
+    story.append(Spacer(1, 12))
+    story.append(Paragraph(f"Issued: {date.today():%B %d, %Y}", styles["Normal"]))
+    story.append(Spacer(1, 18))
+
+    table_data = [
+        ["Subject", "Class", "Letter", "Comment"]
+    ]
+    for g in grades_qs:
+        table_data.append([
+            g.class_number.subject or "",
+            f"{g.class_number.class_number}-{g.section.section}",
+            g.letter.letter,
+            getattr(g, "comment", "")[:85]  # safety truncate
+        ])
+
+    table_style = TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+        ("ALIGN", (2, 1), (2, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+        ("GRID", (0, 0), (-1, -1), 0.3, colors.black),
+    ])
+
+    tbl = Table(table_data, colWidths=[80, 60, 40, 280])
+    tbl.setStyle(table_style)
+    story.append(tbl)
+
+    doc.build(story)
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
+
+
+    reports_dir = Path(settings.MEDIA_ROOT) / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+
+    file_name = f"reportcard_{student_id}_{date.today():%Y-%m-%d}.pdf"
+    file_path = reports_dir / file_name
+    file_path.write_bytes(pdf_bytes)
+
+
+    return JsonResponse({"pdf_url": settings.MEDIA_URL + "reports/" + file_name})
