@@ -237,20 +237,34 @@ class educates(models.Model):
         unique_together = (('teacherid', 'studentid'),)
 
 
-class feedback(models.Model):
+# app/models.py
+from django.db import models
 
-    id = models.AutoField(primary_key=True)
-    studentid = models.ForeignKey('Student',models.DO_NOTHING,db_column='studentid',blank=True,null=True)
-    teacherid = models.ForeignKey('Teacher',models.DO_NOTHING,db_column='teacherid',  blank=True,null=True)
-    class_number = models.ForeignKey('Class',models.DO_NOTHING,db_column='class_number',blank=True,null=True)
-    section = models.IntegerField(blank=True, null=True)
-    comment = models.TextField(blank=True, null=True)
-    letter = models.ForeignKey('final_grade',models.DO_NOTHING,db_column='letter',blank=True,null=True)
+
+class feedback(models.Model):
+    """
+    Stores the narrative comment that a teacher gives a student for a
+    particular class & section.
+    """
+    id = models.BigAutoField(primary_key=True)
+    teacher   = models.ForeignKey('Teacher', on_delete=models.DO_NOTHING, db_column='teacherid',)
+    student   = models.ForeignKey('Student', on_delete=models.DO_NOTHING, db_column='studentid',)
+    class_no  = models.ForeignKey('Class', on_delete=models.DO_NOTHING,db_column='class_no',)
+    section   = models.PositiveSmallIntegerField(db_column='section', help_text="Report‑card term / semester",)
+    letter    = models.ForeignKey('final_grade',to_field='letter',on_delete=models.DO_NOTHING,db_column='letter',)
+    comment   = models.TextField()
 
     class Meta:
-        managed = False
         db_table = 'feedback'
-        unique_together = (('teacherid', 'class_number', 'section', 'studentid'),)
+        # one teacher can only comment once per student‑class‑section
+        unique_together = (
+            ('teacher', 'student', 'class_no', 'section'),
+        )
+        managed = False        # remove iff you want Django to own the table
+
+    def __str__(self):
+        return f'{self.student_id} – {self.class_no_id}:{self.section} ⇒ {self.letter_id}'
+
 
 
 class final_grade(models.Model):
@@ -303,19 +317,26 @@ class recieves_feedback(models.Model):
         db_table = 'recieves_feedback'
 
 
+class receives_grade(models.Model):
+    """
+    Stores the final letter grade that lands on the report card.
+    """
 
-class recieves_grade(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    student  = models.ForeignKey('Student',on_delete=models.DO_NOTHING,db_column='studentid',)
+    class_no = models.ForeignKey('Class',on_delete=models.DO_NOTHING,db_column='class_number',)
+    section  = models.PositiveSmallIntegerField(db_column='section')
+    letter   = models.ForeignKey('final_grade',to_field='letter',on_delete=models.DO_NOTHING,db_column='letter',)
 
-    id = models.AutoField(primary_key=True)
+    class Meta:
+        db_table = 'recieves_grade'         # ← keep MySQL spelling
+        unique_together = (                 # one row per student‑class‑term
+            ('student', 'class_no', 'section'),
+        )
+        managed = False                     # drop if you let Django create it
 
-    letter = models.ForeignKey('final_grade', models.DO_NOTHING, db_column='letter', blank=True, null=True)
-    studentid = models.ForeignKey('Student',models.DO_NOTHING,db_column='studentid',blank=True, null=True)
-    class_number = models.ForeignKey('Class',models.DO_NOTHING,db_column='class_number',blank=True, null=True)
-    section = models.ForeignKey('Class',models.DO_NOTHING,db_column='section',related_name='recievesgrade_section_set',blank=True, null=True)
-
-    class Meta: 
-        managed = False,
-        db_table = 'recieves_grade'
+    def __str__(self):
+        return f'{self.student_id} – {self.class_no_id}:{self.section} ⇒ {self.letter_id}'
 
 
 class Schedule(models.Model):
