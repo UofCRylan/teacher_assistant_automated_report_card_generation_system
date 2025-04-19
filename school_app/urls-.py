@@ -29,4 +29,5 @@ urlpatterns = [
     path('school_member/', views.schoolmember_view, name='schoolmember_view'),
     path('student/', views.student_view, name='student_view'),
     path('teacher/', views.teacher_view, name='teacher_view'),
+    path("api/reportcard", views.reportcard_view, name="reportcard"),
 ]
