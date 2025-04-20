@@ -1,0 +1,62 @@
+.button {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px,
+    rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+  border-radius: 50%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.time-label {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.attendance-table th,
+.attendance-table td {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.attendance-table thead {
+  background-color: #f7f9fc;
+  color: #333;
+  font-weight: 600;
+}
+
+.attendance-table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.attendance-table tbody tr:hover {
+  background-color: #f0f4f8;
+  transition: background-color 0.2s ease;
+}
+
+.attendance-table td {
+  color: #555;
+}
+
+.attendance-table td:last-child,
+.attendance-table td:nth-last-child(2),
+.attendance-table td:nth-last-child(3) {
+  font-weight: 500;
+}

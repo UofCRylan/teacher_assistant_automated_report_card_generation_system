@@ -1,5 +1,5 @@
 import React from "react";
-import "../../../styles/general/ui/button.css";
+import styles from "../../../styles/general/ui/button.module.css";
 
 interface ButtonProps {
   label: string;
@@ -7,6 +7,11 @@ interface ButtonProps {
   onClick?: React.MouseEventHandler;
   id?: string;
   className?: string;
+  textColor?: string;
+  backgroundColor?: string;
+  borderRadius?: number;
+  padding?: number;
+  fontSize?: number;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -15,16 +20,31 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   id,
   className,
+  textColor,
+  backgroundColor,
+  borderRadius,
+  padding,
+  fontSize,
 }) => {
   return (
-    <input
+    <button
       id={id}
-      className={`button ${className}`}
-      type="button"
-      value={label}
+      className={`${styles.button} ${
+        disabled ? styles.disabled : ""
+      } ${className}`}
       disabled={disabled}
       onClick={onClick}
-    />
+      style={{
+        color: textColor || "white",
+        backgroundColor: backgroundColor || "#092833",
+        borderRadius: borderRadius || "5px",
+        padding: padding || "10px 20px",
+        border: "none",
+        fontSize: fontSize || "16px",
+      }}
+    >
+      {label}
+    </button>
   );
 };
 

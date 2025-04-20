@@ -75,6 +75,7 @@
   border-radius: 10px;
   box-sizing: border-box;
   padding: 15px 6px;
+  gap: 10px;
 }
 
 #manage-container > div:hover {
@@ -84,4 +85,26 @@
 
 #manage-container > div > span {
   padding: 5px;
+}
+
+.information-button {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  border-radius: 10px;
+  box-sizing: border-box;
+  padding: 15px 6px;
+  gap: 15px;
+}
+
+.information-button:hover {
+  background-color: rgb(198, 198, 198);
 }

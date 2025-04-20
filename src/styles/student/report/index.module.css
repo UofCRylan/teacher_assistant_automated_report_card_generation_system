@@ -1,0 +1,82 @@
+.container {
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #f3e5f5, #e1f5fe);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #6a1b9a;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.classList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.classCard {
+  background-color: #ffffff;
+  border: 2px solid #b39ddb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.classTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #3949ab;
+}
+
+.success {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.pending {
+  color: #ef6c00;
+  font-weight: bold;
+}
+
+.reportSection {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.readyText {
+  font-size: 18px;
+  color: #388e3c;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.waitingText {
+  font-size: 16px;
+  color: #d84315;
+  font-weight: 500;
+  padding: 12px;
+}
+
+.downloadBtn {
+  background-color: #4caf50;
+  color: white;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.downloadBtn:hover {
+  background-color: #43a047;
+}

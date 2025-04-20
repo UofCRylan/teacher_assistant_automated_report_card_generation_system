@@ -5,7 +5,7 @@ import Layout from "../../../src/components/layout/Layout";
 
 const StudentAttendancePage = () => {
   return (
-    <div>
+    <div style={{ padding: 40, boxSizing: "border-box" }}>
       <h2>My Attendance</h2>
       <div>
         <WeekNavigator />

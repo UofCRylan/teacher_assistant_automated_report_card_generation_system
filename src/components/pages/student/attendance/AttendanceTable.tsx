@@ -1,4 +1,5 @@
 import React from "react";
+import "@/src/styles/student/attendance.css";
 
 const AttendanceTable = () => {
   const courses = [
@@ -26,6 +27,7 @@ const AttendanceTable = () => {
       border={1}
       cellPadding={8}
       style={{ borderCollapse: "collapse", width: "100%", textAlign: "center" }}
+      className="attendance-table"
     >
       <thead>
         <tr>

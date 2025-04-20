@@ -12,11 +12,14 @@
     "@dicebear/collection": "^9.2.2",
     "@dicebear/core": "^9.2.2",
     "@remixicon/react": "^4.6.0",
+    "axios": "^1.8.4",
     "date-fns": "^4.1.0",
     "next": "15.3.0",
     "react": "^19.0.0",
     "react-data-table-component": "^7.7.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-select": "^5.10.1",
+    "universal-cookie": "^8.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

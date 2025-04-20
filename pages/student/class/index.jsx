@@ -2,22 +2,34 @@ import React from "react";
 import SubjectItem from "@/src/components/pages/student/classes/SubjectItem";
 import SubjectManager from "@/src/utils/SubjectManager";
 import Layout from "../../../src/components/layout/Layout";
+import Link from "next/link";
 import "@/src/components/pages/student/classes/Subject-Container.css";
 
 const StudentClasses = () => {
-  const subjects = ["Math", "Science", "English", "SS"];
+  const subjects = [
+    "Math",
+    "Science",
+    "English",
+    "Social Studies",
+    "Gym",
+    "Music",
+    "Homeroom",
+  ];
+
   return (
-    <div>
+    <div style={{ padding: 50, boxSizing: "border-box" }}>
       <h2>My Classes</h2>
       <div className="subject-container">
         {subjects &&
           subjects.map((subject, index) => {
             return (
-              <SubjectItem
-                name={subject}
-                icon={SubjectManager[subject]}
-                key={index}
-              />
+              <Link href={"/student/class/1?section=1"}>
+                <SubjectItem
+                  name={subject}
+                  icon={SubjectManager[subject]}
+                  key={index}
+                />
+              </Link>
             );
           })}
       </div>

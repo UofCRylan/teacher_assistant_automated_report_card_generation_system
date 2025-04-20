@@ -1,8 +1,14 @@
 import {
   RiBookletFill,
   RiBookletLine,
+  RiBookShelfFill,
+  RiBookShelfLine,
   RiCalendar2Fill,
   RiCalendar2Line,
+  RiGraduationCapFill,
+  RiGraduationCapLine,
+  RiGroupFill,
+  RiGroupLine,
   RiHome5Fill,
   RiHome5Line,
   RiTimeFill,
@@ -14,12 +20,39 @@ const TabManager = {
     a: {
       tabs: [
         {
-          label: "Admin Home",
+          label: "Home",
           icon: RiHome5Line,
-          href: "/a",
+          href: "/admin",
           root: true,
           active: {
             icon: RiHome5Fill,
+          },
+        },
+        {
+          label: "Manage Class",
+          icon: RiBookShelfLine,
+          href: "/admin/class",
+          root: false,
+          active: {
+            icon: RiBookShelfFill,
+          },
+        },
+        {
+          label: "Manage Schedule",
+          icon: RiCalendar2Line,
+          href: "/admin/schedule",
+          root: false,
+          active: {
+            icon: RiCalendar2Fill,
+          },
+        },
+        {
+          label: "Manage Attendance",
+          icon: RiTimeLine,
+          href: "/admin/attendance",
+          root: false,
+          active: {
+            icon: RiTimeFill,
           },
         },
       ],
@@ -27,9 +60,9 @@ const TabManager = {
     t: {
       tabs: [
         {
-          label: "Teacher Home",
+          label: "Home",
           icon: RiHome5Line,
-          href: "/t",
+          href: "/teacher",
           root: true,
           active: {
             icon: RiHome5Fill,
@@ -38,25 +71,43 @@ const TabManager = {
         {
           label: "Schedule",
           icon: RiCalendar2Line,
-          href: "/t/schedule",
+          href: "/teacher/schedule",
           root: false,
           active: {
             icon: RiCalendar2Fill,
           },
         },
         {
-          label: "Classes & Report cards",
+          label: "Grades",
+          icon: RiGraduationCapLine,
+          href: "/teacher/grades",
+          root: false,
+          active: {
+            icon: RiGraduationCapFill,
+          },
+        },
+        {
+          label: "Report cards",
           icon: RiBookletLine,
-          href: "/t/classes",
+          href: "/teacher/reports",
           root: false,
           active: {
             icon: RiBookletFill,
           },
         },
         {
-          label: "Attendance",
+          label: "IPP",
+          icon: RiGroupLine,
+          href: "/teacher/ipp",
+          root: false,
+          active: {
+            icon: RiGroupFill,
+          },
+        },
+        {
+          label: "Manage Attendance",
           icon: RiTimeLine,
-          href: "/t/attendance",
+          href: "/teacher/attendance",
           root: false,
           active: {
             icon: RiTimeFill,
@@ -67,7 +118,7 @@ const TabManager = {
     s: {
       tabs: [
         {
-          label: "Student Home",
+          label: "Home",
           icon: RiHome5Line,
           href: "/student",
           root: true,
@@ -85,12 +136,30 @@ const TabManager = {
           },
         },
         {
-          label: "Classes & Grades",
+          label: "My Classes",
+          icon: RiBookShelfLine,
+          href: "/student/class",
+          root: false,
+          active: {
+            icon: RiBookShelfFill,
+          },
+        },
+        {
+          label: "Report Card",
           icon: RiBookletLine,
-          href: "/student/classes",
+          href: "/student/report",
           root: false,
           active: {
             icon: RiBookletFill,
+          },
+        },
+        {
+          label: "IPP",
+          icon: RiGroupLine,
+          href: "/student/ipp",
+          root: false,
+          active: {
+            icon: RiGroupFill,
           },
         },
         {

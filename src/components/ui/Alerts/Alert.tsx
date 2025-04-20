@@ -17,6 +17,7 @@ interface AlertProps {
 const Alert: React.FC<AlertProps> = ({
   type,
   message,
+  width,
   closable,
   timeoutMs,
 }) => {
@@ -33,7 +34,7 @@ const Alert: React.FC<AlertProps> = ({
   })(type);
 
   return (
-    <div className={`alert ${type}`}>
+    <div className={`alert ${type}`} style={{ width: width }}>
       <div>{icon}</div>
       <div>
         <span>{message}</span>

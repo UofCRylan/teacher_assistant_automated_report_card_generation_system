@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { format, startOfWeek, addWeeks } from "date-fns";
 import { RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react";
+import "@/src/styles/student/attendance.css";
 
 const WeekNavigator = () => {
   const [weekOffset, setWeekOffset] = useState(0);
@@ -28,21 +29,27 @@ const WeekNavigator = () => {
 
   return (
     <div style={{ textAlign: "center", padding: "1rem" }}>
-      <button onClick={handleBack}>
+      <button className="button" onClick={handleBack}>
         <RiArrowLeftSLine />
       </button>
-      <span style={{ margin: "0 1rem" }}>{displayLabel()}</span>
-      <button onClick={handleFront} disabled={weekOffset === 0}>
+      <span className="time-label" style={{ margin: "0 1rem" }}>
+        {displayLabel()}
+      </span>
+      <button
+        className="button"
+        onClick={handleFront}
+        disabled={weekOffset === 0}
+      >
         <RiArrowRightSLine />
       </button>
 
-      <div style={{ marginTop: "1rem" }}>
+      {/* <div style={{ marginTop: "1rem" }}>
         {[0, 1, 2, 3, 4].map((i) => {
           const day = new Date(currentWeekStart);
           day.setDate(day.getDate() + i);
           return <div key={i}>{format(day, "EEEE dd/MM")}</div>;
         })}
-      </div>
+      </div> */}
     </div>
   );
 };

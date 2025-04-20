@@ -1,6 +1,6 @@
 .subject-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 .subject-item {
@@ -20,9 +20,15 @@
   padding: 25px;
   box-sizing: border-box;
   border-radius: 10px;
+  gap: 26px;
 }
 
 .subject-item:hover {
   background-color: rgb(210, 255, 255);
   cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
 }

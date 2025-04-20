@@ -1,7 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
+import Layout from "../../src/components/layout/Layout";
+import accountManager from "@/src/utils/Managers/AccountManager.js";
 
-const StudentHome = () => {
-  return <div>StudentHome</div>;
+const StudentHomePage = () => {
+  useEffect(() => {
+    console.log(accountManager.getUserInfo());
+  }, []);
+
+  return (
+    <div>
+      <h1>StudentHome</h1>
+    </div>
+  );
 };
 
-export default StudentHome;
+StudentHomePage.getLayout = function getLayout(page) {
+  return <Layout>{page}</Layout>;
+};
+
+export default StudentHomePage;
