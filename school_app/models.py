@@ -340,20 +340,29 @@ class receives_grade(models.Model):
 
 
 class Schedule(models.Model):
-    schedule_id = models.IntegerField(primary_key=True)
-    class_number_id = models.IntegerField(blank=True, null=True)
-    section_id = models.IntegerField(blank=True, null=True)
-    homeroom_id = models.IntegerField(blank=True, null=True)
-    math_id  = models.IntegerField(blank=True, null=True)
-    science_id  = models.IntegerField(blank=True, null=True)
-    english_id  = models.IntegerField(blank=True, null=True)
-    social_studies_id = models.IntegerField(blank=True, null=True)
-    gym_id  = models.IntegerField(blank=True, null=True)
-    music_id = models.IntegerField(blank=True, null=True)
+
+    id = models.AutoField(primary_key=True)
+    student = models.OneToOneField("Student",on_delete=models.CASCADE,related_name="schedule",db_column="student_id",help_text="The student this schedule belongs to")
+    homeroom  = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="homeroom_schedules")
+    math = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="math_schedules")
+    science = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="science_schedules")
+    english = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="english_schedules")
+    social_studies = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="socstud_schedules")
+    gym = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="gym_schedules")
+    music = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="music_schedules")
+
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed = False
-        db_table = 'schedule'
+        db_table = "schedule"     
+        verbose_name = "schedule"
+        verbose_name_plural = "schedules"
+
+
+    def __str__(self):
+        return f"Schedule #{self.id} – {self.student.studentid.first_name}"
 
 
 class scheduled(models.Model):
