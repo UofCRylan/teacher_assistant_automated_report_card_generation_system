@@ -7,13 +7,18 @@ import Button from "../../../../src/components/ui/Button/Button";
 import { generateTimeOptions } from "@/src/utils/Handlers/TimeHandler.ts";
 import { addMinutes } from "date-fns";
 import VSpace from "../../../../src/components/ui/Space/VSpace";
+import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
+import { useRouter } from "next/router";
 
 const AdminCreateClassPage = () => {
-  const [name, setName] = useState("");
+  const [className, setClassName] = useState("");
+  const [subject, setSubject] = useState(undefined);
   const [beginTime, setBeginTime] = useState(undefined);
   const [endTime, setEndTime] = useState(undefined);
   const [teacher, setTeacher] = useState(undefined);
   const [classroom, setClassroom] = useState(undefined);
+
+  const router = useRouter();
 
   const subjectOptions = [
     { value: "Homeroom", label: "Homeroom" },
@@ -25,22 +30,21 @@ const AdminCreateClassPage = () => {
   ];
 
   const teacherOptions = [
-    { value: "Homeroom", label: "Homeroom" },
-    { value: "Math", label: "Math" },
-    { value: "Science", label: "Science" },
-    { value: "social studies", label: "Social Studies" },
-    { value: "Gym", label: "Gym" },
-    { value: "Music", label: "Music" },
+    { value: 25, label: "John" },
+    { value: 26, label: "Math" },
+    { value: 27, label: "Science" },
+    { value: 28, label: "Social Studies" },
+    { value: 29, label: "Gym" },
   ];
 
   const classroomOptions = [
-    { value: "Homeroom", label: "Homeroom" },
-    { value: "Math", label: "Math" },
-    { value: "Science", label: "Science" },
-    { value: "social studies", label: "Social Studies" },
-    { value: "Gym", label: "Gym" },
-    { value: "Music", label: "Music" },
-  ];
+    { value: 1, label: "Homeroom" },
+    { value: 2, label: "Math" },
+    { value: 3, label: "Science" },
+    { value: 4, label: "Social Studies" },
+    { value: 5, label: "Gym" },
+    { value: 6, label: "Music" },
+  ]; // TODO: Make route
 
   const beginTimeOptions = generateTimeOptions("08:00");
 
@@ -51,6 +55,26 @@ const AdminCreateClassPage = () => {
     return generateTimeOptions(formattedNextStart);
   }, [beginTime]);
 
+  const handleCreate = async () => {
+    const result = await classHandler.createClass({
+      class_id: 60,
+      section_id: 60,
+      class_name: className,
+      subject: subject.value,
+      time_start: beginTime.value,
+      time_end: endTime.value,
+      teacher_id: teacher.value,
+      room_id: classroom.value,
+    });
+
+    if (result?.status === 200) {
+      // TODO:
+      router.push("/admin/class");
+    }
+
+    console.log("Create: ", result);
+  };
+
   return (
     <div className="create-container">
       <main>
@@ -59,15 +83,22 @@ const AdminCreateClassPage = () => {
           <div className="container">
             <div>
               <Text
-                value={name}
-                handleChange={(value) => setName(value)}
+                value={className}
+                handleChange={(value) => setClassName(value)}
                 label="Name"
               />
             </div>
             <div className="end">
               <label>Subject</label>
               <VSpace />
-              <Select name="subject" options={subjectOptions} />
+              <Select
+                name="subject"
+                options={subjectOptions}
+                value={subject}
+                onChange={(selectedOption) => {
+                  setSubject(selectedOption);
+                }}
+              />
             </div>
           </div>
           <VSpace space={23} />
@@ -102,6 +133,7 @@ const AdminCreateClassPage = () => {
             <Select
               name="teacher"
               options={teacherOptions}
+              value={teacher}
               onChange={(selectedOption) => setTeacher(selectedOption)}
               isDisabled={!beginTime || !endTime}
             />
@@ -113,6 +145,7 @@ const AdminCreateClassPage = () => {
             <Select
               name="classroom"
               options={classroomOptions}
+              value={classroom}
               onChange={(selectedOption) => setClassroom(selectedOption)}
               isDisabled={!beginTime || !endTime}
             />
@@ -120,7 +153,7 @@ const AdminCreateClassPage = () => {
         </div>
         <VSpace space={40} />
         <div>
-          <Button label="Create class" />
+          <Button label="Create class" onClick={() => handleCreate()} />
         </div>
       </main>
     </div>

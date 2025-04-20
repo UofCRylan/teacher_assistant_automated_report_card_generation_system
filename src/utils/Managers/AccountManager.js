@@ -23,6 +23,7 @@ class AccountManager {
 
     if (accessToken) {
       this.#user = accessToken;
+      this.userToken = accessToken;
     }
   }
 
@@ -58,6 +59,7 @@ class AccountManager {
       date.setDate(date.getDate() + 90);
 
       this.#user = accessToken;
+      this.accessToken = accessToken;
       cookies.set("user", accessToken, {
         expires: date,
         maxAge: 90 * 86400,
