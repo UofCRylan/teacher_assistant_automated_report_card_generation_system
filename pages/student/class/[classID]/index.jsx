@@ -9,70 +9,109 @@ import Layout from "../../../../src/components/layout/Layout";
 import { parse, format } from "date-fns";
 // import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/router";
-import { getClass, getClassList } from "@/src/utils/Handlers/ClassHandler";
+import classHandler from "@/src/utils/Handlers/ClassHandler";
+import accountManager from "@/src/utils/Managers/AccountManager.js";
+import gradeHandler from "@/src/utils/Handlers/GradeHandler.ts";
+import feedbackHandler from "@/src/utils/Handlers/feedbackHandler.ts";
 
 import "@/src/styles/student/classes.css";
 
 const StudentClassPage = () => {
   const router = useRouter();
   // const searchParams = useSearchParams();
-
   const [view, setView] = useState("About");
   const [classInformation, setClassInformation] = useState(undefined);
+  const [grade, setGrade] = useState(undefined);
+  const [feedback, setFeedback] = useState(undefined);
   const [classList, setClassList] = useState([]);
 
-  // useEffect(() => {
-  //   if (!router.isReady) {
-  //     return;
-  //   }
+  useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
 
-  //   const section_id = router.query.section;
-  //   console.log("section_id: ", section_id);
+    const { classID, section } = router.query;
+    console.log("section_id: ", section);
 
-  //   if (section_id) {
-  //     const fetchData = async () => {
-  //       try {
-  //         const result = await getClass(router.query.classID, section_id);
-  //         console.log("Result: ", result);
+    if (section) {
+      const fetchData = async () => {
+        try {
+          const result = await classHandler.getClass(classID, section);
+          console.log("Result: ", result);
 
-  //         if (result.error) {
-  //           console.error("Error fetching class info:", result.error);
-  //           return;
-  //         }
+          if (result.error) {
+            console.error("Error fetching class info:", result.error);
+            return;
+          }
 
-  //         setClassInformation(result);
-  //       } catch (error) {
-  //         console.error("Error fetching class info:", error);
-  //       }
-  //     };
+          console.log("Setting class information as: ", result);
 
-  //     const fetchClassListData = async () => {
-  //       try {
-  //         const result = await getClassList(router.query.classID, section_id);
+          setClassInformation(result);
+        } catch (error) {
+          console.error("Error fetching class info:", error);
+        }
+      };
 
-  //         if (result.error) {
-  //           console.error("Error fetching class list info:", result.error);
-  //           return;
-  //         }
+      // const fetchClassListData = async () => {
+      //   try {
+      //     const result = await getClassList(classID, section);
 
-  //         result.data.forEach((element) => {
-  //           element["name"] =
-  //             element["first_name"] + " " + element["last_name"];
-  //           element["role"] = "Student";
-  //         });
+      //     if (result.error) {
+      //       console.error("Error fetching class list info:", result.error);
+      //       return;
+      //     }
 
-  //         console.log("List result: ", result);
+      //     result.data.forEach((element) => {
+      //       element["name"] =
+      //         element["first_name"] + " " + element["last_name"];
+      //       element["role"] = "Student";
+      //     });
 
-  //         setClassList(result.data);
-  //       } catch (error) {
-  //         console.error("Error fetching class info:", error);
-  //       }
-  //     };
+      //     console.log("List result: ", result);
 
-  //     fetchData();
-  //     fetchClassListData();
-  //   }
-  // }, [router.isReady]);
+      //     setClassList(result.data);
+      //   } catch (error) {
+      //     console.error("Error fetching class info:", error);
+      //   }
+      // };
+
+      const fetchGrade = async () => {
+        const user = await accountManager.getUserInfo();
+        console.log("User: ", user);
+
+        const result = await gradeHandler.getGrade(
+          classID,
+          section,
+          user.data.id
+        );
+
+        if (result.status === 200) {
+          setGrade(result.data);
+          console.log("Grade: ", grade);
+        }
+      };
+
+      const fetchFeedback = async () => {
+        const user = await accountManager.getUserInfo();
+        console.log("User: ", user);
+
+        const result = await feedbackHandler.getFeedback(
+          classID,
+          section,
+          user.data.id
+        );
+
+        if (result.status === 200) {
+          setFeedback(result.data);
+        }
+      };
+
+      fetchData();
+      // fetchClassListData();
+      fetchGrade();
+      fetchFeedback();
+    }
+  }, [router.isReady]);
 
   const columns = [
     {
@@ -94,36 +133,45 @@ const StudentClassPage = () => {
 
   return (
     <div>
-      <div className="class-header">
-        <div>
-          <img
-            src={SubjectManager[classInformation.data.subject]}
-            width={40}
-            alt="subject-icon"
-          />
-          <span>{classInformation.data.class_name}</span>
-        </div>
-      </div>
-      <div className="container">
-        <SideBar
-          options={["About", "Grades & Feedback"]}
-          selected={view}
-          handleChange={(value) => setView(value)}
-        />
-        <div className="content">
-          <div>
-            <h2>Grades & Feedback</h2>
-            <StudentGradeCard
-              studentName="John"
-              data={{
-                grade: "A+",
-                feedback:
-                  "John received a A- in Homeroom 1. John did excellent work on daily routines. Keep working hard!",
-              }}
-            />
+      {classInformation ? (
+        <>
+          <div className="class-header">
+            <div>
+              <img
+                src={SubjectManager[classInformation.data.subject]}
+                width={40}
+                alt="subject-icon"
+              />
+              <span>{classInformation.data.class_name}</span>
+            </div>
           </div>
-        </div>
-      </div>
+          <div className="container">
+            <SideBar
+              options={["About", "Grades & Feedback"]}
+              selected={view}
+              handleChange={(value) => setView(value)}
+            />
+            <div className="content">
+              <div>
+                <h2>Grades & Feedback</h2>
+                {(grade !== undefined) & (feedback !== undefined) ? (
+                  <StudentGradeCard
+                    studentName={grade.student.data.full_name}
+                    data={{
+                      grade: grade.grade.letter,
+                      feedback: feedback.comment,
+                    }}
+                  />
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <span>Loading...</span>
+      )}
     </div>
   );
 };

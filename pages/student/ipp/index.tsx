@@ -1,5 +1,6 @@
 import React from "react";
 import Layout from "@/src/components/layout/Layout.js";
+const;
 
 const StudentIppPage = () => {
   return <div>StudentIppPage</div>;

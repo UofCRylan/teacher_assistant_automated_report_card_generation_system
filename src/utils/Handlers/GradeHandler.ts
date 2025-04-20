@@ -1,12 +1,23 @@
 import axios from "axios";
 import accountManager from "../Managers/AccountManager";
 
-class AttendanceHandler {
+class GradeHandler {
   updateGrade = accountManager.requireAuth(
-    async (classID: number, data: Object) => {
+    async (
+      classID: number,
+      sectionID: number,
+      studentID: number,
+      data: object
+    ) => {
       try {
         const response = await axios.put(
-          `http://127.0.0.1:8000/api/class/${classID}/grade/`
+          `http://127.0.0.1:8000/api/class/${classID}/section/${sectionID}/students/${studentID}/grade`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${accountManager.userToken}`,
+            },
+          }
         );
 
         return {
@@ -21,40 +32,49 @@ class AttendanceHandler {
     }
   );
 
-  getGrade = accountManager.requireAuth(async (classID: number) => {
-    try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/class/${classID}/grade/`
-      );
+  getGrade = accountManager.requireAuth(
+    async (classID: number, sectionID: number, studentID: number) => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/class/${classID}/section/${sectionID}/students/${studentID}/grade`
+        );
 
-      return {
-        status: 200,
-        data: response.data,
-      };
-    } catch (error) {
-      return {
-        error: error,
-      };
+        return {
+          status: 200,
+          data: response.data,
+        };
+      } catch (error) {
+        return {
+          error: error,
+        };
+      }
     }
-  });
+  );
 
-  getAllGrades = accountManager.requireAuth(async (classID: number) => {
-    try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/class/${classID}/grades`
-      );
+  getAllGrades = accountManager.requireAuth(
+    async (classID: number, sectionID: number) => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/class/${classID}/section/${sectionID}/grade`,
+          {
+            headers: {
+              Authorization: `Bearer ${accountManager.userToken}`,
+            },
+          }
+        );
 
-      return {
-        status: 200,
-        data: response.data,
-      };
-    } catch (error) {
-      return {
-        error: error,
-      };
+        return {
+          status: 200,
+          data: response.data,
+        };
+      } catch (error) {
+        return {
+          error: error,
+        };
+      }
     }
-  });
+  );
 }
 
-const attendanceHandler = new AttendanceHandler();
-export default attendanceHandler;
+const gradeHandler = new GradeHandler();
+export default gradeHandler;

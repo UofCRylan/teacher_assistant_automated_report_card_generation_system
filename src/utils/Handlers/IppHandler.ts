@@ -2,12 +2,18 @@ import axios from "axios";
 import accountManager from "../Managers/AccountManager";
 
 class IppHandler {
-  editIpp = accountManager.requireAuth(async (studentID: number) => {
+  createIpp = accountManager.requireAuth(async (studentID: number) => {
     try {
-      const response = await axios.put(
-        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`
+      const response = await axios.post(
+        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${accountManager.userToken}`,
+          },
+        }
       );
-      console.log("Responded: ", response);
+
       return {
         status: 200,
         data: response.data,
@@ -19,12 +25,79 @@ class IppHandler {
     }
   });
 
-  getIpp = accountManager.requireAuth(async (studentID: number) => {
+  editIpp = accountManager.requireAuth(async (studentID: number) => {
+    try {
+      const response = await axios.put(
+        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${accountManager.userToken}`,
+          },
+        }
+      );
+
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
+    }
+  });
+
+  getStudentsIpp = accountManager.requireAuth(async (studentID: number) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`
+        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accountManager.userToken}`,
+          },
+        }
       );
-      console.log("Responded: ", response);
+
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
+    }
+  });
+
+  getTeachersIpp = accountManager.requireAuth(async () => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8000/api/teacher/ipp/`,
+        {
+          headers: {
+            Authorization: `Bearer ${accountManager.userToken}`,
+          },
+        }
+      );
+
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
+    }
+  });
+
+  getAIpp = accountManager.requireAuth(async (ipp: number) => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8000/api/student/ipp/${ipp}`
+      );
+
       return {
         status: 200,
         data: response.data,

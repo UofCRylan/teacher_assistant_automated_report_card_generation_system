@@ -28,7 +28,7 @@ const StudentGradeCard: React.FC<StudentGradeCardProps> = ({
 
   return (
     <div className={styles.cardContainer}>
-      <h2 className={styles.cardTitle}>Hello {studentName}! 🎓</h2>
+      <h2 className={styles.cardTitle}>{studentName}</h2>
 
       <div className={getGradeClass(grade)}>
         {grade

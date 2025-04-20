@@ -10,6 +10,7 @@ let instance;
 
 class AccountManager {
   #user;
+  // user_id;
   userToken;
 
   constructor() {
