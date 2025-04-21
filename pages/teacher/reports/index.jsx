@@ -23,7 +23,7 @@ const TeacherReportsPage = () => {
     <div style={{ display: "flex", justifyContent: "center" }}>
       {classes !== undefined ? (
         <main style={{ width: 900 }}>
-          <TeacherClassView classes={classes} />
+          <TeacherClassView classes={classes} link={"reports"} />
         </main>
       ) : (
         <span>Loading...</span>

@@ -2,34 +2,11 @@ import axios from "axios";
 import accountManager from "../Managers/AccountManager";
 
 class IppHandler {
-  createIpp = accountManager.requireAuth(async (studentID: number) => {
+  updateIpp = accountManager.requireAuth(async (studentID: number, data) => {
     try {
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`,
-        null,
-        {
-          headers: {
-            Authorization: `Bearer ${accountManager.userToken}`,
-          },
-        }
-      );
-
-      return {
-        status: 200,
-        data: response.data,
-      };
-    } catch (error) {
-      return {
-        error: error,
-      };
-    }
-  });
-
-  editIpp = accountManager.requireAuth(async (studentID: number) => {
-    try {
-      const response = await axios.put(
-        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`,
-        null,
+        `http://127.0.0.1:8000/api/student/${studentID}/ipp/create`,
+        data,
         {
           headers: {
             Authorization: `Bearer ${accountManager.userToken}`,

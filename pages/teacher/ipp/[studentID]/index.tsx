@@ -4,15 +4,21 @@ import ippHandler from "@/src/utils/Handlers/IppHandler";
 import styles from "./StudentIppDetailPage.module.css";
 import Layout from "@/src/components/layout/Layout";
 import { useRouter } from "next/router";
+import Modal from "@/src/components/ui/Modal/Modal";
+import Text from "@/src/components/ui/Input/Text.tsx";
 
 const TeacherIppDetailPage = () => {
   const router = useRouter();
   const [ipp, setIpp] = useState(undefined);
+  const [showModal, setShowModal] = useState(false);
+
+  // Edit fields
+  const [goals, setGoals] = useState("");
+  const [e_a, setEA] = useState("");
+  const [s_d, setSD] = useState("");
 
   useEffect(() => {
-    if (!router.isReady) {
-      return;
-    }
+    if (!router.isReady) return;
 
     const { studentID } = router.query;
 
@@ -25,8 +31,10 @@ const TeacherIppDetailPage = () => {
         );
 
         if (result.status === 200) {
-          console.log("result: ", result);
           setIpp(result.data);
+          setGoals(result.data.goals);
+          setEA(result.data.e_a);
+          setSD(result.data.s_d);
         }
       }
     };
@@ -34,12 +42,52 @@ const TeacherIppDetailPage = () => {
     fetchData();
   }, [router.isReady]);
 
+  const handleEdit = async () => {
+    if (!ipp) return;
+
+    const { studentID } = router.query;
+
+    const updatedData = {
+      goals,
+      e_a,
+      s_d,
+    };
+
+    const result = await ippHandler.updateIpp(studentID, updatedData); // Assuming .id is IPP ID
+    if (result.status === 200) {
+      setShowModal(false);
+      setIpp({ ...ipp, ...updatedData }); // Optimistically update UI
+    }
+  };
+
   return (
     <div className={styles.page}>
       {ipp !== undefined ? (
         <>
           <div className={styles.card}>
-            <h1 className={styles.title}>Individual Program Plan</h1>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h1 className={styles.title}>Individual Program Plan</h1>
+              <button
+                onClick={() => setShowModal(true)}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#1565c0",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Edit IPP
+              </button>
+            </div>
 
             <div className={styles.section}>
               <h2>Student Info</h2>
@@ -71,11 +119,61 @@ const TeacherIppDetailPage = () => {
               <h2>IPP Details</h2>
               <div className={styles.grid}>
                 <Info label="Goal" value={ipp.goals} />
-                <Info label="SD" value={ipp.s_d} />
-                <Info label="EA" value={ipp.e_a} />
+                <Info label="Specified Disability" value={ipp.s_d} />
+                <Info label="Educational Aids" value={ipp.e_a} />
               </div>
             </div>
           </div>
+
+          <Modal
+            show={showModal}
+            handleClose={() => setShowModal(false)}
+            width="500px"
+            borderRadius="12px"
+          >
+            <h2 style={{ marginBottom: "20px" }}>Edit IPP</h2>
+
+            <Text
+              type="text"
+              label="Goals"
+              placeholder="Update goals"
+              value={goals}
+              handleChange={setGoals}
+            />
+            <div style={{ marginTop: "16px" }}>
+              <Text
+                type="text"
+                label="Educational Aids"
+                placeholder="Update educational aids"
+                value={e_a}
+                handleChange={setEA}
+              />
+            </div>
+            <div style={{ marginTop: "16px", marginBottom: "20px" }}>
+              <Text
+                type="text"
+                label="Specified Disability"
+                placeholder="Update specified disability"
+                value={s_d}
+                handleChange={setSD}
+              />
+            </div>
+
+            <button
+              onClick={handleEdit}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#1565c0",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "500",
+              }}
+            >
+              Save
+            </button>
+          </Modal>
         </>
       ) : (
         <span>Loading</span>

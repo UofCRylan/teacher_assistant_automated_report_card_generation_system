@@ -47,7 +47,6 @@ const TeacherEditAttendancePage = () => {
 
   // Initialize students and attendance records from the provided data
   useEffect(() => {
-    console.log("h1");
     if (!router.isReady) {
       return;
     }

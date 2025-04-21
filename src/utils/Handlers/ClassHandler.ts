@@ -84,6 +84,21 @@ class ClassHandler {
       }
     }
   );
+
+  getAllStudents = accountManager.requireAuth(async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/student/`);
+
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
+    }
+  });
 }
 
 const classHandler = new ClassHandler();

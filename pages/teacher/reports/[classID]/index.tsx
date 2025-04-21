@@ -1,7 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "@/src/styles/teacher/reports/index.module.css";
 import Modal from "@/src/components/ui/Modal/Modal";
+import Layout from "@/src/components/layout/Layout";
 import { RiPencilLine } from "@remixicon/react";
+import reportHandler from "@/src/utils/Handlers/ReportHandler";
+import { useRouter } from "next/router";
+import feedbackHandler from "@/src/utils/Handlers/FeedbackHandler";
+
+// Updated type definitions
+type StudentRecord = {
+  student: {
+    data: {
+      id: number;
+      full_name: string;
+    };
+  };
+  grade: string | null;
+  feedback: string | null;
+};
 
 type Student = {
   id: number;
@@ -10,32 +26,45 @@ type Student = {
   feedback: string | null;
 };
 
-const initialStudents: Student[] = [
-  {
-    id: 1,
-    name: "Alice",
-    grade: "A+",
-    feedback: "Alice did an amazing job this term. Great participation!",
-  },
-  {
-    id: 2,
-    name: "Ben",
-    grade: null,
-    feedback: null,
-  },
-  {
-    id: 3,
-    name: "Charlie",
-    grade: "B",
-    feedback: null,
-  },
-];
+const transformData = (data: any): Student[] => {
+  return data.student_records.map((record: StudentRecord) => ({
+    id: record.student.data.id,
+    name: record.student.data.full_name,
+    grade: record.grade,
+    feedback: record.feedback,
+  }));
+};
 
 const TeacherReportsDetailPage = () => {
-  const [students, setStudents] = useState<Student[]>(initialStudents);
+  const [students, setStudents] = useState<Student[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [newFeedback, setNewFeedback] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady) {
+      return;
+    }
+
+    const { classID, section } = router.query;
+
+    const fetchData = async () => {
+      const result = await reportHandler.checkTeacherReportCardStatus(
+        classID,
+        section
+      );
+
+      if (result.status === 200) {
+        console.log("Teacher report: ", result.data);
+
+        const formattedStudents = transformData(result.data);
+        setStudents(formattedStudents);
+      }
+    };
+
+    fetchData();
+  }, [router.isReady]);
 
   const handleEditClick = (student: Student) => {
     setSelectedStudent(student);
@@ -43,14 +72,34 @@ const TeacherReportsDetailPage = () => {
     setShowModal(true);
   };
 
-  const handleSaveFeedback = () => {
+  const handleSaveFeedback = async () => {
     if (selectedStudent) {
+      const { classID, section } = router.query;
+
+      // Update local state
       const updated = students.map((s) =>
         s.id === selectedStudent.id ? { ...s, feedback: newFeedback } : s
       );
       setStudents(updated);
+
+      // Prepare payload for API
+      const payload = {
+        student_id: selectedStudent.id,
+        feedback: newFeedback,
+      };
+
+      console.log("Payload to send:", payload);
+      const result = await feedbackHandler.updateFeedback(
+        classID,
+        section,
+        selectedStudent.id,
+        payload
+      );
+      console.log("Feedback returned: ", result);
+      // TODO: Send to API here
+
+      setShowModal(false);
     }
-    setShowModal(false);
   };
 
   return (
@@ -63,37 +112,39 @@ const TeacherReportsDetailPage = () => {
       </div>
 
       <div className={styles.studentList}>
-        {students.map((student) => (
-          <div key={student.id} className={styles.studentCard}>
-            <div className={styles.studentInfo}>
-              <h3 className={styles.studentName}>{student.name}</h3>
-              <p className={styles.grade}>
-                Grade:{" "}
-                {student.grade ? (
-                  <span className={styles.gradeValue}>{student.grade}</span>
-                ) : (
-                  <span className={styles.missing}>Not yet assigned</span>
-                )}
-              </p>
-              <p className={styles.feedback}>
-                Feedback:{" "}
-                {student.feedback ? (
-                  student.feedback
-                ) : (
-                  <span className={styles.missing}>No feedback yet</span>
-                )}
-              </p>
+        {students.length > 0 &&
+          students.map((student) => (
+            <div key={student.id} className={styles.studentCard}>
+              <div className={styles.studentInfo}>
+                <h3 className={styles.studentName}>{student.name}</h3>
+                <p className={styles.grade}>
+                  Grade:{" "}
+                  {student.grade ? (
+                    <span className={styles.gradeValue}>{student.grade}</span>
+                  ) : (
+                    <span className={styles.missing}>Not yet assigned</span>
+                  )}
+                </p>
+                <p className={styles.feedback}>
+                  Feedback:{" "}
+                  {student.feedback ? (
+                    student.feedback
+                  ) : (
+                    <span className={styles.missing}>No feedback yet</span>
+                  )}
+                </p>
+              </div>
+              <button
+                className={styles.editIcon}
+                onClick={() => handleEditClick(student)}
+                title="Edit Feedback"
+              >
+                <RiPencilLine size={20} />
+              </button>
             </div>
-            <button
-              className={styles.editIcon}
-              onClick={() => handleEditClick(student)}
-              title="Edit Feedback"
-            >
-              <RiPencilLine size={20} />
-            </button>
-          </div>
-        ))}
+          ))}
       </div>
+
       <Modal
         show={showModal}
         width="400px"
@@ -114,6 +165,10 @@ const TeacherReportsDetailPage = () => {
       </Modal>
     </div>
   );
+};
+
+TeacherReportsDetailPage.getLayout = function getLayout(page) {
+  return <Layout>{page}</Layout>;
 };
 
 export default TeacherReportsDetailPage;
