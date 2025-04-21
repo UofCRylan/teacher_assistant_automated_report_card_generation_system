@@ -105,6 +105,13 @@ class AccountManager {
     return undefined;
   }
 
+  logout = () => {
+    console.log("Logging out....");
+    cookies.remove("user");
+    this.#user = undefined;
+    this.accessToken = undefined;
+  };
+
   // Callback to make sure user is signed in otherwise returns 400 error
   requireAuth(callback) {
     return (...args) => {

@@ -13,6 +13,7 @@ const ManageContainer: React.FC<ManageContainerProps> = ({
   setShow,
   fullName,
   handleViewInformation,
+  handleLogout,
 }) => {
   return (
     <div id="manage-container" style={{ display: show ? "flex" : "none" }}>
@@ -26,10 +27,10 @@ const ManageContainer: React.FC<ManageContainerProps> = ({
         <Avatar fullName={fullName} size="xs" />
         <span>{fullName}</span>
       </button>
-      <div>
+      <button className="information-button" onClick={() => handleLogout()}>
         <RiLogoutCircleRLine size={32} />
         <span>Sign Out</span>
-      </div>
+      </button>
     </div>
   );
 };

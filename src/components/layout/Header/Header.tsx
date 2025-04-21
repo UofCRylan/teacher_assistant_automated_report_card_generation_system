@@ -12,9 +12,11 @@ import Text from "../../ui/Input/Text";
 import Button from "../../ui/Button/Button";
 import VSpace from "../../ui/Space/VSpace";
 import accountManager from "@/src/utils/Managers/AccountManager";
+import { useRouter } from "next/router";
 
 function Header() {
   const location = usePathname();
+  const router = useRouter();
   const [user, setUser] = useState(undefined);
   const [showManageContainer, setShowManageContainer] = useState(false);
   const [showMeContainer, setShowMeContainer] = useState(false);
@@ -48,6 +50,11 @@ function Header() {
     setShowManageContainer((prevState) => !prevState);
   };
 
+  const handleLogout = () => {
+    accountManager.logout();
+    router.push("/");
+  };
+
   return (
     <div className="header">
       {user && (
@@ -74,6 +81,7 @@ function Header() {
             setShow={() => setShowManageContainer(!showManageContainer)}
             fullName={user.full_name}
             handleViewInformation={() => setShowMeContainer(!showMeContainer)}
+            handleLogout={() => handleLogout()}
           />
           <Modal
             show={showMeContainer}

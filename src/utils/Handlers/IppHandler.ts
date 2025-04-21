@@ -51,7 +51,7 @@ class IppHandler {
   getStudentsIpp = accountManager.requireAuth(async (studentID: number) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/api/student/${studentID}/ipp/`,
+        `http://127.0.0.1:8000/api/student/${studentID}/ipp`,
         {
           headers: {
             Authorization: `Bearer ${accountManager.userToken}`,
@@ -69,6 +69,30 @@ class IppHandler {
       };
     }
   });
+
+  getSpecificStudentIpp = accountManager.requireAuth(
+    async (studentID: number, teacherID: number) => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/student/${studentID}/ipp/${teacherID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accountManager.userToken}`,
+            },
+          }
+        );
+
+        return {
+          status: 200,
+          data: response.data,
+        };
+      } catch (error) {
+        return {
+          error: error,
+        };
+      }
+    }
+  );
 
   getTeachersIpp = accountManager.requireAuth(async () => {
     try {
