@@ -1,5 +1,5 @@
 .timeSlot {
-  height: 20px;
+  height: 80px;
   line-height: 20px;
   font-size: 0.75rem;
   text-align: right;
@@ -103,11 +103,27 @@
   } */
 
 .mathColor {
-  background-color: #e74c3c;
+  background-color: #c5e73c;
 }
 
 .scienceColor {
   background-color: #3498db;
+}
+
+.gymColor {
+  background-color: #3ce778;
+}
+
+.englishColor {
+  background-color: #e74c3c;
+}
+
+.musicColor {
+  background-color: #775551;
+}
+
+.homeroomColor {
+  background-color: #923a97;
 }
 
 .legend {

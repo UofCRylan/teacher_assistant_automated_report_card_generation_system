@@ -6,43 +6,22 @@ import {
   isBefore,
   parse,
   differenceInMinutes,
+  setMinutes,
+  getMinutes,
+  getHours,
 } from "date-fns";
 
-const ScheduleView = () => {
+const ScheduleView = ({ schedule }) => {
   const styling = {
     Math: "mathColor",
     Science: "scienceColor",
+    English: "englishColor",
+    Gym: "gymColor",
+    Music: "musicColor",
+    Homeroom: "homeroomColor",
+    "Social Studies": "socialStudiesColor",
   };
-
-  const schedule = [
-    {
-      class_id: 1,
-      class_section: 5,
-      class_room: 8,
-      class_name: "Algebra I",
-      class_subject: "Math",
-      time_start: "08:00",
-      time_end: "09:00",
-    },
-    {
-      class_id: 3,
-      class_section: 5,
-      class_room: 8,
-      class_name: "Calculus I",
-      class_subject: "Math",
-      time_start: "11:00",
-      time_end: "12:00",
-    },
-    {
-      class_id: 1,
-      class_section: 5,
-      class_room: 8,
-      class_name: "Algebra I",
-      class_subject: "Science",
-      time_start: "13:00",
-      time_end: "14:15",
-    },
-  ];
+  const SLOT_HEIGHT = 80;
 
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
   const startTime = parse("08:00", "HH:mm", new Date());
@@ -55,8 +34,34 @@ const ScheduleView = () => {
     currentTime = addMinutes(currentTime, 15);
   }
 
+  // Find the closest 15-minute time slot for a given time
+  const findNearestTimeSlot = (timeStr) => {
+    try {
+      // Parse the time
+      const time = parse(timeStr, "HH:mm", new Date());
+
+      // Get hours and minutes
+      const hours = getHours(time);
+      const minutes = getMinutes(time);
+
+      // Round to nearest 15 minute increment
+      const roundedMinutes = Math.floor(minutes / 15) * 15;
+
+      // Create a new date with rounded minutes
+      const roundedTime = setMinutes(
+        parse(`${hours}:00`, "H:mm", new Date()),
+        roundedMinutes
+      );
+
+      return format(roundedTime, "HH:mm");
+    } catch (e) {
+      console.error("Error finding nearest slot for:", timeStr, e);
+      return timeStr;
+    }
+  };
+
   const getClassesByDay = (day) => {
-    // You can customize per day logic if needed later
+    // For now, all days return the same schedule
     return schedule;
   };
 
@@ -64,35 +69,76 @@ const ScheduleView = () => {
     const classes = getClassesByDay(day);
     const elements = [];
     let index = 0;
+    const processedSlots = new Set(); // Keep track of which slots we've handled
+
+    // Pre-calculate the nearest time slot for each class and organize by time slot
+    const classesByTimeSlot = {};
+    classes.forEach((cls) => {
+      const nearestSlot = findNearestTimeSlot(cls.class.time_start);
+      if (!classesByTimeSlot[nearestSlot]) {
+        classesByTimeSlot[nearestSlot] = [];
+      }
+      classesByTimeSlot[nearestSlot].push(cls);
+    });
 
     while (index < timeSlots.length) {
       const currentSlot = timeSlots[index];
-      const cls = classes.find((c) => c.time_start === currentSlot);
 
-      if (cls) {
-        const duration = differenceInMinutes(
-          parse(cls.time_end, "HH:mm", new Date()),
-          parse(cls.time_start, "HH:mm", new Date())
-        );
-        const slotCount = duration / 15;
+      // Check if a class starting at this time slot
+      if (
+        classesByTimeSlot[currentSlot] &&
+        classesByTimeSlot[currentSlot].length > 0
+      ) {
+        const clsItem = classesByTimeSlot[currentSlot][0]; // Get the first class at this time
+        const { class: cls } = clsItem;
 
-        elements.push(
-          <div
-            key={`${day}-${cls.class_id}`}
-            className={`${styles.classBlock} ${
-              styles[styling[cls.class_subject]]
-            }`}
-            style={{ height: `${slotCount * 20}px` }}
-          >
-            <strong>{cls.class_name}</strong>
-            <div>Room {cls.class_room}</div>
-          </div>
-        );
+        try {
+          const startTime = parse(cls.time_start, "HH:mm", new Date());
+          const endTime = parse(cls.time_end, "HH:mm", new Date());
 
-        index += slotCount;
+          const duration = differenceInMinutes(endTime, startTime);
+          const slotCount = Math.max(1, Math.round(duration / 15));
+
+          elements.push(
+            <div
+              key={`${day}-${cls.class_number}-${cls.time_start}`}
+              className={`${styles.classBlock} ${
+                styles[styling[cls.subject]] || styles.defaultColor
+              }`}
+              style={{ height: `${slotCount * SLOT_HEIGHT}px` }}
+            >
+              <strong>{cls.class_name}</strong>
+              <div>Room {cls.room.room_number}</div>
+              {cls.teacher && cls.teacher.data && (
+                <div>{cls.teacher.data.full_name}</div>
+              )}
+              <div className={styles.classTime}>
+                {cls.time_start} - {cls.time_end}
+              </div>
+            </div>
+          );
+
+          // Mark this time slot as processed
+          processedSlots.add(currentSlot);
+          index += slotCount;
+        } catch (error) {
+          console.error("Error with class:", cls.class_name, error);
+          elements.push(
+            <div
+              key={`${day}-error-${index}`}
+              className={styles.emptySlot}
+              style={{ height: `${SLOT_HEIGHT}px` }}
+            ></div>
+          );
+          index++;
+        }
       } else {
         elements.push(
-          <div key={`${day}-empty-${index}`} className={styles.emptySlot}></div>
+          <div
+            key={`${day}-empty-${index}`}
+            className={styles.emptySlot}
+            style={{ height: `${SLOT_HEIGHT}px` }}
+          ></div>
         );
         index++;
       }
@@ -105,19 +151,16 @@ const ScheduleView = () => {
     <div className={styles.container}>
       <div className={styles.scheduleWrapper}>
         <div className={styles.legend}>
-          <div className={styles.legendItem}>
-            <span
-              className={`${styles.legendColor} ${styles.mathColor}`}
-            ></span>
-            <span className={styles.legendLabel}>Math</span>
-          </div>
-          <div className={styles.legendItem}>
-            <span
-              className={`${styles.legendColor} ${styles.scienceColor}`}
-            ></span>
-            <span className={styles.legendLabel}>Science</span>
-          </div>
+          {Object.entries(styling).map(([subject, styleClass]) => (
+            <div key={subject} className={styles.legendItem}>
+              <span
+                className={`${styles.legendColor} ${styles[styleClass]}`}
+              ></span>
+              <span className={styles.legendLabel}>{subject}</span>
+            </div>
+          ))}
         </div>
+
         <div className={styles.dayHeaders}>
           <div className={styles.timeColumnHeader}></div>
           {days.map((day) => (

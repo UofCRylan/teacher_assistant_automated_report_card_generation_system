@@ -7,7 +7,6 @@ class ScheduleHandler {
       const response = await axios.post(`http://127.0.0.1:8000/api/schedule`, {
         headers: { Authorization: `Bearer ${accountManager.userToken}` },
       });
-      console.log("Info Responded: ", response);
 
       return response;
     } catch (error) {
@@ -24,7 +23,6 @@ class ScheduleHandler {
       const response = await axios.put(`http://127.0.0.1:8000/api/schedule`, {
         headers: { Authorization: `Bearer ${accountManager.userToken}` },
       });
-      console.log("Info Responded: ", response);
 
       return response;
     } catch (error) {
@@ -38,10 +36,9 @@ class ScheduleHandler {
 
   getSchedule = accountManager.requireAuth(async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/schedule`, {
+      const response = await axios.get(`http://127.0.0.1:8000/api/schedule/`, {
         headers: { Authorization: `Bearer ${accountManager.userToken}` },
       });
-      console.log("Info Responded: ", response);
 
       return response;
     } catch (error) {
