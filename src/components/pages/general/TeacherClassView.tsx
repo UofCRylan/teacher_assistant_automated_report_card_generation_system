@@ -3,7 +3,7 @@ import Link from "next/link";
 import styles from "./ClassView.module.css";
 import { RiArrowRightSLine } from "@remixicon/react";
 
-const TeacherClassView = ({ classes }) => {
+const TeacherClassView = ({ classes, link }) => {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
@@ -12,7 +12,7 @@ const TeacherClassView = ({ classes }) => {
           {classes.map((classItem) => (
             <Link
               key={classItem.class_number}
-              href={`/teacher/attendance/${classItem.class_number}?section=${classItem.section}`}
+              href={`/teacher/${link}/${classItem.class_number}?section=${classItem.section}`}
               className={styles.classCard}
             >
               <div className={styles.classInfo}>
