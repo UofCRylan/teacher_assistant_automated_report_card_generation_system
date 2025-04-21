@@ -27,6 +27,7 @@ CREATE TABLE `student` (
   `scheduleid` int DEFAULT NULL,
   PRIMARY KEY (`studentid`),
   KEY `fk_student_scheduleid_idx` (`scheduleid`),
+  CONSTRAINT `scheduleid_fk` FOREIGN KEY (`scheduleid`) REFERENCES `schedule` (`schedule_id`),
   CONSTRAINT `studentid` FOREIGN KEY (`studentid`) REFERENCES `school_member` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -50,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-23 22:21:48
+-- Dump completed on 2025-04-20 21:15:32

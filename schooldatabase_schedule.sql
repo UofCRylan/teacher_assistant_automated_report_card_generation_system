@@ -24,32 +24,8 @@ DROP TABLE IF EXISTS `schedule`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `schedule` (
   `schedule_id` int NOT NULL AUTO_INCREMENT,
-  `class_number` int NOT NULL,
-  `section` int NOT NULL,
-  `Homeroom` int DEFAULT NULL,
-  `Math` int DEFAULT NULL,
-  `Science` int DEFAULT NULL,
-  `English` int DEFAULT NULL,
-  `Social_Studies` int DEFAULT NULL,
-  `Gym` int DEFAULT NULL,
-  `Music` int DEFAULT NULL,
-  PRIMARY KEY (`schedule_id`),
-  KEY `class_number` (`class_number`,`section`),
-  KEY `Homeroom` (`Homeroom`,`section`),
-  KEY `Math` (`Math`,`section`),
-  KEY `Science` (`Science`,`section`),
-  KEY `English` (`English`,`section`),
-  KEY `Social_Studies` (`Social_Studies`,`section`),
-  KEY `Gym` (`Gym`,`section`),
-  KEY `Music` (`Music`,`section`),
-  CONSTRAINT `schedule_ibfk_1` FOREIGN KEY (`class_number`, `section`) REFERENCES `class` (`class_number`, `section`),
-  CONSTRAINT `schedule_ibfk_2` FOREIGN KEY (`Homeroom`, `section`) REFERENCES `class` (`class_number`, `section`),
-  CONSTRAINT `schedule_ibfk_3` FOREIGN KEY (`Math`, `section`) REFERENCES `class` (`class_number`, `section`),
-  CONSTRAINT `schedule_ibfk_4` FOREIGN KEY (`Science`, `section`) REFERENCES `class` (`class_number`, `section`),
-  CONSTRAINT `schedule_ibfk_5` FOREIGN KEY (`English`, `section`) REFERENCES `class` (`class_number`, `section`),
-  CONSTRAINT `schedule_ibfk_6` FOREIGN KEY (`Social_Studies`, `section`) REFERENCES `class` (`class_number`, `section`),
-  CONSTRAINT `schedule_ibfk_7` FOREIGN KEY (`Gym`, `section`) REFERENCES `class` (`class_number`, `section`),
-  CONSTRAINT `schedule_ibfk_8` FOREIGN KEY (`Music`, `section`) REFERENCES `class` (`class_number`, `section`)
+  `grade_level` int NOT NULL,
+  PRIMARY KEY (`schedule_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -59,7 +35,7 @@ CREATE TABLE `schedule` (
 
 LOCK TABLES `schedule` WRITE;
 /*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
-INSERT INTO `schedule` VALUES (1,1,1,1,2,3,5,4,6,7),(2,1,2,1,2,3,5,4,6,7),(3,2,1,8,9,10,12,11,14,13),(4,2,2,8,9,10,12,11,14,13),(5,3,1,15,16,17,21,20,19,18),(6,3,2,15,16,17,21,20,19,18),(7,4,1,22,37,38,35,36,25,28),(8,4,2,22,37,38,35,36,25,28),(9,5,1,23,41,42,39,40,26,29),(10,5,2,23,41,42,39,40,26,29),(11,6,1,24,31,32,33,34,27,30),(12,6,2,24,31,32,33,34,27,30);
+INSERT INTO `schedule` VALUES (1,1),(2,1),(3,2),(4,2),(5,3),(6,3),(7,4),(8,4),(9,5),(10,5),(11,6),(12,6);
 /*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -72,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-23 22:21:48
+-- Dump completed on 2025-04-20 21:15:32
