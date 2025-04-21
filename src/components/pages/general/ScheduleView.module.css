@@ -126,6 +126,10 @@
   background-color: #923a97;
 }
 
+.socialStudiesColor {
+  background-color: #00ffee;
+}
+
 .legend {
   display: flex;
   gap: 1.5rem;

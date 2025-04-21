@@ -5,7 +5,7 @@ import styles from "./StudentIppDetailPage.module.css";
 import Layout from "@/src/components/layout/Layout";
 import { useRouter } from "next/router";
 
-const StudentIppDetailPage = () => {
+const TeacherIppDetailPage = () => {
   const router = useRouter();
   const [ipp, setIpp] = useState(undefined);
 
@@ -14,14 +14,14 @@ const StudentIppDetailPage = () => {
       return;
     }
 
-    const { teacherID } = router.query;
+    const { studentID } = router.query;
 
     const fetchData = async () => {
       const user = await accountManager.getUserInfo();
       if (user !== undefined) {
         const result = await ippHandler.getSpecificStudentIpp(
-          user.data.id,
-          teacherID
+          studentID,
+          user.data.id
         );
 
         if (result.status === 200) {
@@ -91,8 +91,8 @@ const Info = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-StudentIppDetailPage.getLayout = function getLayout(page) {
+TeacherIppDetailPage.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
 };
 
-export default StudentIppDetailPage;
+export default TeacherIppDetailPage;

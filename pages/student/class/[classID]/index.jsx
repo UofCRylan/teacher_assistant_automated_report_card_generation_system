@@ -19,11 +19,12 @@ import "@/src/styles/student/classes.css";
 const StudentClassPage = () => {
   const router = useRouter();
   // const searchParams = useSearchParams();
+
   const [view, setView] = useState("About");
   const [classInformation, setClassInformation] = useState(undefined);
+  const [classList, setClassList] = useState([]);
   const [grade, setGrade] = useState(undefined);
   const [feedback, setFeedback] = useState(undefined);
-  const [classList, setClassList] = useState([]);
 
   useEffect(() => {
     if (!router.isReady) {
@@ -37,44 +38,44 @@ const StudentClassPage = () => {
       const fetchData = async () => {
         try {
           const result = await classHandler.getClass(classID, section);
-          console.log("Result: ", result);
+          console.log("Result: ", result.data);
 
           if (result.error) {
             console.error("Error fetching class info:", result.error);
             return;
           }
 
-          console.log("Setting class information as: ", result);
-
-          setClassInformation(result);
+          setClassInformation(result.data);
         } catch (error) {
           console.error("Error fetching class info:", error);
         }
       };
 
-      // const fetchClassListData = async () => {
-      //   try {
-      //     const result = await getClassList(classID, section);
+      const fetchClassListData = async () => {
+        try {
+          const result = await classHandler.getStudents(classID, section);
 
-      //     if (result.error) {
-      //       console.error("Error fetching class list info:", result.error);
-      //       return;
-      //     }
+          if (result.error) {
+            console.error("Error fetching class list info:", result.error);
+            return;
+          }
 
-      //     result.data.forEach((element) => {
-      //       element["name"] =
-      //         element["first_name"] + " " + element["last_name"];
-      //       element["role"] = "Student";
-      //     });
+          result.data.forEach((element) => {
+            element.data["name"] =
+              element.data["first_name"] + " " + element.data["last_name"];
+            element.data["role"] = "Student";
+          });
 
-      //     console.log("List result: ", result);
+          console.log("List result: ", result.data);
 
-      //     setClassList(result.data);
-      //   } catch (error) {
-      //     console.error("Error fetching class info:", error);
-      //   }
-      // };
+          setClassList(result.data);
+        } catch (error) {
+          console.error("Error fetching class info:", error);
+        }
+      };
 
+      fetchData();
+      fetchClassListData();
       const fetchGrade = async () => {
         const user = await accountManager.getUserInfo();
         console.log("User: ", user);
@@ -116,33 +117,33 @@ const StudentClassPage = () => {
   const columns = [
     {
       name: "Name",
-      selector: (row) => row.name,
+      selector: (row) => row.data.name,
       sortable: true,
     },
     {
       name: "Email",
-      selector: (row) => row.email,
+      selector: (row) => row.data.email,
       sortable: true,
     },
     {
       name: "Role",
-      selector: (row) => row.role,
+      selector: (row) => row.data.role,
       sortable: true,
     },
   ];
 
   return (
     <div>
-      {classInformation ? (
+      {classInformation !== undefined ? (
         <>
           <div className="class-header">
             <div>
               <img
-                src={SubjectManager[classInformation.data.subject]}
+                src={SubjectManager[classInformation.subject]}
                 width={40}
                 alt="subject-icon"
               />
-              <span>{classInformation.data.class_name}</span>
+              <span>{classInformation.class_name}</span>
             </div>
           </div>
           <div className="container">
@@ -152,25 +153,69 @@ const StudentClassPage = () => {
               handleChange={(value) => setView(value)}
             />
             <div className="content">
-              <div>
-                <h2>Grades & Feedback</h2>
-                {(grade !== undefined) & (feedback !== undefined) ? (
-                  <StudentGradeCard
-                    studentName={grade.student.data.full_name}
-                    data={{
-                      grade: grade.grade.letter,
-                      feedback: feedback.comment,
-                    }}
-                  />
-                ) : (
-                  <p>Loading...</p>
-                )}
-              </div>
+              {view === "About" && (
+                <>
+                  <div className="class-info">
+                    <div className="item">
+                      <b>
+                        <span>Time</span>
+                      </b>
+                      <span>
+                        {format(
+                          parse(
+                            classInformation.time_start,
+                            "HH:mm",
+                            new Date()
+                          ),
+                          "hh:mm a"
+                        )}{" "}
+                        -{" "}
+                        {format(
+                          parse(classInformation.time_end, "HH:mm", new Date()),
+                          "hh:mm a"
+                        )}
+                      </span>
+                    </div>
+                    <div className="item">
+                      <b>
+                        <span>Teacher</span>
+                      </b>
+                      <span>
+                        <b>Name: </b>
+                        {classInformation.teacher.data.last_name},{" "}
+                        {classInformation.teacher.data.first_name}
+                      </span>
+                      <span>
+                        <b>Email: </b>
+                        {classInformation.teacher.data.email}
+                      </span>
+                    </div>
+                  </div>
+                  <h2>Class list</h2>
+                  <DataTable columns={columns} data={classList} pagination />
+                </>
+              )}
+              {view === "Grades & Feedback" && (
+                <>
+                  <h2>Grades & Feedback</h2>
+                  {(grade !== undefined) & (feedback !== undefined) ? (
+                    <StudentGradeCard
+                      studentName={grade.student.data.full_name}
+                      data={{
+                        grade: grade.grade.letter,
+                        feedback: feedback.comment,
+                      }}
+                    />
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </>
       ) : (
-        <span>Loading...</span>
+        <span>Loading....</span>
       )}
     </div>
   );

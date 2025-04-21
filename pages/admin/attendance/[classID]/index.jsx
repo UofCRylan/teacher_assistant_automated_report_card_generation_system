@@ -6,12 +6,12 @@ import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler";
 import styles from "./edit.module.css";
 import { useRouter } from "next/router";
 
-const TeacherEditAttendancePage = () => {
+const AdminEditAttendancePage = () => {
   // Attendance status options
   const attendanceOptions = [
-    { value: "Present", label: "Present" },
-    { value: "Absent", label: "Absent" },
-    { value: "Late", label: "Late" },
+    { value: "present", label: "Present" },
+    { value: "absent", label: "Absent" },
+    { value: "late", label: "Late" },
   ];
   const router = useRouter();
 
@@ -163,9 +163,6 @@ const TeacherEditAttendancePage = () => {
       <div className={styles.header}>
         <div>
           <h2 className={styles.title}>Edit Attendance</h2>
-          <small>
-            Note: As a teacher you can only update attendance for current day
-          </small>
           {classInfo !== undefined ? (
             <div className={styles.classCard}>
               <div className={styles.classRow}>
@@ -238,8 +235,8 @@ const TeacherEditAttendancePage = () => {
   );
 };
 
-TeacherEditAttendancePage.getLayout = function getLayout(page) {
+AdminEditAttendancePage.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
 };
 
-export default TeacherEditAttendancePage;
+export default AdminEditAttendancePage;

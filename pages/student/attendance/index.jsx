@@ -1,16 +1,60 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import WeekNavigator from "@/src/components/pages/student/attendance/WeekNavigator.tsx";
 import AttendanceTable from "@/src/components/pages/student/attendance/AttendanceTable.tsx";
+import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
+import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler.ts";
 import Layout from "../../../src/components/layout/Layout";
+import VSpace from "../../../src/components/ui/Space/VSpace";
 
 const StudentAttendancePage = () => {
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [classes, setClasses] = useState([]);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+
+  // Fetch student classes and attendance data
+  useEffect(() => {
+    // Replace with actual API calls
+    const fetchStudentData = async () => {
+      try {
+        // Mock data - replace with actual API calls
+        const classesResponse = await scheduleHandler.getSchedule();
+        const attendanceResponse =
+          await attendanceHandler.getAttendanceRecords();
+
+        console.log("1: ", classesResponse);
+        console.log("2: ", attendanceResponse);
+
+        setClasses(classesResponse.data);
+        setAttendanceRecords(attendanceResponse.data);
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
+    };
+
+    fetchStudentData();
+  }, []);
+
   return (
     <div style={{ padding: 40, boxSizing: "border-box" }}>
       <h2>My Attendance</h2>
-      <div>
-        <WeekNavigator />
-      </div>
-      <AttendanceTable />
+      {(classes.length > 0) & (attendanceRecords.length > 0) ? (
+        <>
+          <div>
+            <WeekNavigator
+              weekOffset={weekOffset}
+              setWeekOffset={setWeekOffset}
+            />
+          </div>
+          <VSpace space={20} />
+          <AttendanceTable
+            classes={classes}
+            attendanceRecords={attendanceRecords}
+            weekOffset={weekOffset}
+          />
+        </>
+      ) : (
+        <span>Loading...</span>
+      )}
     </div>
   );
 };

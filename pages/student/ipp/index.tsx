@@ -37,7 +37,7 @@ const StudentIppPage = () => {
                 ipps.map((ipp, index) => (
                   <Link
                     key={index}
-                    href={`/student/ipp/${ipp.teacher.id}`}
+                    href={`/student/ipp/${ipp.teacher.data.id}`}
                     className={styles.card}
                   >
                     <div className={styles.cardHeader}>

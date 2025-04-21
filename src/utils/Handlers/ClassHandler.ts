@@ -51,9 +51,28 @@ class ClassHandler {
     async (id: number, section_id: number) => {
       try {
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/class/${id}?section=${section_id}`
+          `http://127.0.0.1:8000/api/class/${id}/section/${section_id}`
         );
         console.log("Responded: ", response);
+        return {
+          status: 200,
+          data: response.data,
+        };
+      } catch (error) {
+        return {
+          error: error,
+        };
+      }
+    }
+  );
+
+  getStudents = accountManager.requireAuth(
+    async (id: number, section_id: number) => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/class/${id}/section/${section_id}/students`
+        );
+
         return {
           status: 200,
           data: response.data,

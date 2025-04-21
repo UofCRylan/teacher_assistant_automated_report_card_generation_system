@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { format, startOfWeek, addWeeks } from "date-fns";
 import { RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react";
 import "@/src/styles/student/attendance.css";
 
-const WeekNavigator = () => {
-  const [weekOffset, setWeekOffset] = useState(0);
-
+const WeekNavigator = ({ weekOffset, setWeekOffset }) => {
   const today = new Date();
   const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 }); // Monday
   const currentWeekStart = addWeeks(startOfCurrentWeek, weekOffset);
@@ -13,7 +11,6 @@ const WeekNavigator = () => {
   const displayLabel = () => {
     if (weekOffset === 0) return "This Week";
     if (weekOffset === -1) return "Last Week";
-
     const startLabel = format(currentWeekStart, "dd/MM");
     const endLabel = format(
       new Date(currentWeekStart.getTime() + 4 * 24 * 60 * 60 * 1000),
@@ -42,14 +39,6 @@ const WeekNavigator = () => {
       >
         <RiArrowRightSLine />
       </button>
-
-      {/* <div style={{ marginTop: "1rem" }}>
-        {[0, 1, 2, 3, 4].map((i) => {
-          const day = new Date(currentWeekStart);
-          day.setDate(day.getDate() + i);
-          return <div key={i}>{format(day, "EEEE dd/MM")}</div>;
-        })}
-      </div> */}
     </div>
   );
 };
