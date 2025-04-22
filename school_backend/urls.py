@@ -25,6 +25,8 @@ urlpatterns = [
     path('api/student/', include('school_app.urls.student_urls')),
     path('api/teacher/', include('school_app.urls.teacher_urls')),
     path('api/class/', include('school_app.urls.class_urls')),
+    path('api/schedule/', include('school_app.urls.schedule_urls')),
+    path('api/report/', include('school_app.urls.reports_urls')),
     # path('api/admin/', include('school_app.urls.admin_urls')),
     # path('admin/', admin.site.urls),
     # # e.g., /school/upload/ => calls upload_ocr_view

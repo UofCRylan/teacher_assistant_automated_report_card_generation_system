@@ -5,7 +5,10 @@
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
+from datetime import timezone
+
 from django.db import models
+from django.utils import timezone
 
 
 class address(models.Model):
@@ -33,19 +36,28 @@ class Assigned(models.Model):
 
 
 class Attendance(models.Model):
-    id = models.AutoField(primary_key=True)  
-    class_number = models.ForeignKey('Class', models.DO_NOTHING, db_column='class_number', blank=True, null=True)
-    section = models.IntegerField(blank=True, null=False)
-    teacherid = models.ForeignKey('Teacher', models.DO_NOTHING,db_column='teacherid', blank=True, null=True)
-    studentid = models.ForeignKey('Student', models.DO_NOTHING,  db_column='studentid', blank=True, null=True)
+    id = None
+
+    class_no = models.IntegerField(db_column='class_number')
+    section = models.IntegerField()
+    teacherid = models.ForeignKey('Teacher', models.DO_NOTHING,db_column='teacherid')
+    studentid = models.ForeignKey('Student', models.DO_NOTHING,  db_column='studentid', primary_key=True)
     date = models.DateField()
     status = models.CharField(max_length=45, blank=True, null=True)
 
     def to_dict(self):
+        from school_app.models import Class
+
+        try:
+            class_obj = Class.objects.get(class_number=self.class_no, section=self.section)
+            class_dict = class_obj.to_dict()
+        except Class.DoesNotExist:
+            class_dict = None
+
+        # print("Dict: ", class_dict)
+
         return {
-            "id": self.id,
-            "class": self.class_number.to_dict() if self.class_number else None,
-            "section": self.section,
+            "class": class_dict,
             "student": self.studentid.to_dict() if self.studentid else None,
             "teacher": self.teacherid.to_dict() if self.teacherid else None,
             "date": self.date,
@@ -56,6 +68,7 @@ class Attendance(models.Model):
     class Meta:
         managed = False
         db_table = 'attendance'
+        unique_together = (('class_no', 'section', 'teacherid', 'studentid', 'date'),)
 
 
 class auth_group(models.Model):
@@ -130,16 +143,16 @@ class Class(models.Model):
     class_number = models.IntegerField(primary_key=True)
     section = models.IntegerField(blank=True, null=False)
     subject = models.CharField(max_length=45, blank=True, null=True)
-    time_start = models.IntegerField(blank=True, null=True)
-    time_end = models.IntegerField(blank=True, null=True)
+    time_start = models.CharField(max_length=45, blank=True, null=True)
+    time_end = models.CharField(max_length=45, blank=True, null=True)
     class_name = models.CharField(max_length=45, blank=True, null=True)
     teacher_id = models.ForeignKey('Teacher', models.DO_NOTHING, db_column='teacher_id', blank=True, null=True)
-    room_id = models.ForeignKey('class_room', models.DO_NOTHING,db_column='room_id', blank=True, null=True)
+    room_id = models.ForeignKey('ClassRoom', models.DO_NOTHING,db_column='room_id', blank=True, null=True)
 
     def to_dict(self):
         try:
             room = self.room_id.to_dict() if self.room_id else None
-        except class_room.DoesNotExist:
+        except ClassRoom.DoesNotExist:
             room = None
 
         try:
@@ -161,13 +174,14 @@ class Class(models.Model):
     class Meta:
         managed = False
         db_table = 'Class'
+        unique_together = (('class_number', 'section'),)
 
 
-class class_room(models.Model):
-    room_number = models.IntegerField(primary_key=True)
+class ClassRoom(models.Model):
+    roomid = models.IntegerField(primary_key=True, max_length=45)
     capacity = models.IntegerField(blank=True, null=True)
     building = models.CharField(max_length=45, blank=True, null=True)
-    roomid = models.CharField(max_length=45, blank=True, null=True)
+    room_number = models.CharField(max_length=45, blank=True, null=True)
 
     def to_dict(self):
         return {
@@ -228,7 +242,7 @@ class django_session(models.Model):
 
 
 class educates(models.Model):
-    teacherid = models.OneToOneField('Teacher', models.DO_NOTHING, db_column='teacherid', primary_key=True) 
+    teacherid = models.OneToOneField('Teacher', models.DO_NOTHING, db_column='teacherid', primary_key=True)
     studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='studentid')
 
     class Meta:
@@ -241,16 +255,15 @@ class educates(models.Model):
 from django.db import models
 
 
-class feedback(models.Model):
+class Feedback(models.Model):
     """
     Stores the narrative comment that a teacher gives a student for a
     particular class & section.
     """
-    id = models.BigAutoField(primary_key=True)
     teacher   = models.ForeignKey('Teacher', on_delete=models.DO_NOTHING, db_column='teacherid',)
-    student   = models.ForeignKey('Student', on_delete=models.DO_NOTHING, db_column='studentid',)
-    class_no  = models.ForeignKey('Class', on_delete=models.DO_NOTHING,db_column='class_no',)
-    section   = models.PositiveSmallIntegerField(db_column='section', help_text="Report‑card term / semester",)
+    student   = models.ForeignKey('Student', on_delete=models.DO_NOTHING, db_column='studentid', primary_key=True)
+    class_no  = models.IntegerField(db_column='classnumber')
+    section   = models.IntegerField(db_column='section', help_text="Report‑card term / semester",)
     letter    = models.ForeignKey('final_grade',to_field='letter',on_delete=models.DO_NOTHING,db_column='letter',)
     comment   = models.TextField()
 
@@ -262,8 +275,25 @@ class feedback(models.Model):
         )
         managed = False        # remove iff you want Django to own the table
 
+    def to_dict(self):
+        from school_app.models import Class
+
+        try:
+            class_obj = Class.objects.get(class_number=self.class_no, section=self.section)
+            class_dict = class_obj.to_dict()
+        except Class.DoesNotExist:
+            class_dict = None
+
+        return {
+            'grade': self.letter.to_dict(),
+            'class': class_dict,
+            'student': self.student.to_dict(),
+            'teacher': self.teacher.to_dict(),
+            'comment': self.comment
+        }
+
     def __str__(self):
-        return f'{self.student_id} – {self.class_no_id}:{self.section} ⇒ {self.letter_id}'
+        return f'{self.student_id} – {self.class_no}:{self.section} ⇒ {self.letter_id}'
 
 
 
@@ -271,15 +301,22 @@ class final_grade(models.Model):
     letter = models.CharField(primary_key=True, max_length=45)
     word = models.CharField(max_length=45, blank=True, null=True)
 
+    def to_dict(self):
+        return {
+            'letter': self.letter,
+            'word': self.word,
+        }
+
     class Meta:
         managed = False
         db_table = 'final_grade'
 
 
-
 class individual_progress_plan(models.Model):
-    teacherid = models.OneToOneField('Teacher', models.DO_NOTHING, db_column='teacherid', primary_key=True)  # The composite primary key (teacherid, studentid) found, that is not supported. The first column is selected.
-    studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='studentid')
+    id = None
+
+    teacherid = models.OneToOneField('Teacher', models.DO_NOTHING, db_column='teacherid')
+    studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='studentid', primary_key=True)
     goals = models.TextField(blank=True, null=True)
     specified_disability = models.CharField(max_length=45, blank=True, null=True)
     educational_aids = models.CharField(max_length=45, blank=True, null=True)
@@ -287,7 +324,16 @@ class individual_progress_plan(models.Model):
     class Meta:
         managed = False
         db_table = 'individual_progress_plan'
-        unique_together = (('teacherid', 'studentid'),)
+        unique_together = (('teacherid', 'studentid'))
+
+    def to_dict(self):
+        return {
+            'teacher': Teacher.objects.get(teacherid=self.teacherid).to_dict(),
+            'student': Student.objects.get(studentid=self.studentid).to_dict(),
+            'goals': self.goals,
+            's_d': self.specified_disability,
+            'e_a': self.educational_aids,
+        }
 
 
 class includes(models.Model):
@@ -301,42 +347,80 @@ class includes(models.Model):
             db_table = 'includes'
             unique_together = (('class_number', 'section', 'studentid'),)
 
+# class ReceivesFeedback(models.Model):
+#
+#     teacherid = models.ForeignKey('Teacher', models.DO_NOTHING, db_column='teacherid',blank=True, null=True )
+#     studentid = models.ForeignKey('Student',models.DO_NOTHING, db_column='studentid',blank=True, null=True, primary_key=True)
+#     class_no = models.ForeignKey( 'Class', models.DO_NOTHING, db_column='class_number',blank=True, null=True)
+#     section = models.ForeignKey('Class', models.DO_NOTHING, db_column='section', related_name='recievesfeedback_section_set',blank=True, null=True)
+#     letter = models.ForeignKey( 'final_grade', models.DO_NOTHING, db_column='letter', blank=True, null=True )
+#
+#     def to_dict(self):
+#         return {
+#             'letter': self.letter.to_dict(),
+#             'section': self.section,
+#             'class': self.class_no.to_dict(),
+#             'student': self.studentid.to_dict()
+#         }
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'recieves_feedback'
+#         unique_together = (                 # one row per student‑class‑term
+#             ('studentid', 'class_no', 'section', 'teacherid'),
+#         )
 
-class recieves_feedback(models.Model):
 
-    id = models.AutoField(primary_key=True)
+# class ReceivesGrade(models.Model):
+#     """
+#     Stores the final letter grade that lands on the report card.
+#     """
+#
+#     student  = models.ForeignKey('Student',on_delete=models.DO_NOTHING,db_column='studentid', primary_key=True)
+#     class_no = models.IntegerField(db_column='class_number')
+#     # class_no = models.ForeignKey('Class',on_delete=models.DO_NOTHING,db_column='class_number')
+#     section  = models.IntegerField(db_column='section')
+#     letter   = models.ForeignKey('final_grade',to_field='letter',on_delete=models.DO_NOTHING,db_column='letter',)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'recieves_grade'         # ← keep MySQL spelling
+#         unique_together = (                 # one row per student‑class‑term
+#             ('student', 'class_no', 'section'),
+#         )
+#                            # drop if you let Django create it
 
-    teacherid = models.ForeignKey('Teacher', models.DO_NOTHING, db_column='teacherid',blank=True, null=True )
-    studentid = models.ForeignKey('Student',models.DO_NOTHING, db_column='studentid',blank=True, null=True)
-    classnumber = models.ForeignKey( 'Class', models.DO_NOTHING, db_column='class_number',blank=True, null=True)
-    section = models.ForeignKey('Class', models.DO_NOTHING, db_column='section', related_name='recievesfeedback_section_set',blank=True, null=True)
-    letter = models.ForeignKey( 'final_grade', models.DO_NOTHING, db_column='letter', blank=True, null=True )
+class ReceivesGrade(models.Model):
+    id = None
+
+    student = models.ForeignKey('Student', on_delete=models.DO_NOTHING, db_column='studentid', primary_key=True)
+    class_no = models.IntegerField(db_column='class_number')
+    section = models.IntegerField(db_column='section')
+    letter = models.ForeignKey('final_grade', to_field='letter', on_delete=models.DO_NOTHING, db_column='letter')
 
     class Meta:
         managed = False
-        db_table = 'recieves_feedback'
+        db_table = 'recieves_grade'
+        unique_together = (('letter', 'student', 'class_no', 'section'),)
 
 
-class receives_grade(models.Model):
-    """
-    Stores the final letter grade that lands on the report card.
-    """
+    def to_dict(self):
+        from school_app.models import Class
 
-    id = models.BigAutoField(primary_key=True)
-    student  = models.ForeignKey('Student',on_delete=models.DO_NOTHING,db_column='studentid',)
-    class_no = models.ForeignKey('Class',on_delete=models.DO_NOTHING,db_column='class_number',)
-    section  = models.PositiveSmallIntegerField(db_column='section')
-    letter   = models.ForeignKey('final_grade',to_field='letter',on_delete=models.DO_NOTHING,db_column='letter',)
+        try:
+            class_obj = Class.objects.get(class_number=self.class_no, section=self.section)
+            class_dict = class_obj.to_dict()
+        except Class.DoesNotExist:
+            class_dict = None
 
-    class Meta:
-        db_table = 'recieves_grade'         # ← keep MySQL spelling
-        unique_together = (                 # one row per student‑class‑term
-            ('student', 'class_no', 'section'),
-        )
-        managed = False                     # drop if you let Django create it
+        return {
+            'grade': self.letter.to_dict(),
+            'class': class_dict,
+            'student': self.student.to_dict()
+        }
 
     def __str__(self):
-        return f'{self.student_id} – {self.class_no_id}:{self.section} ⇒ {self.letter_id}'
+        return f'{self.student_id} – {self.class_no}:{self.section} ⇒ {self.letter_id}'
 
 
 class Schedule(models.Model):
@@ -352,8 +436,8 @@ class Schedule(models.Model):
     music = models.ForeignKey("Class", on_delete=models.SET_NULL, null=True,related_name="music_schedules")
 
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # created_at = models.DateTimeField(auto_now_add=True, default=timezone.now)
+    # updated_at = models.DateTimeField(auto_now=True, default=timezone.now)
 
     class Meta:
         db_table = "schedule"     
@@ -364,16 +448,39 @@ class Schedule(models.Model):
     def __str__(self):
         return f"Schedule #{self.id} – {self.student.studentid.first_name}"
 
-
-class scheduled(models.Model):
-
-    roomid = models.OneToOneField('class_room', models.DO_NOTHING, db_column='roomid', primary_key=True)
-    studentid = models.ForeignKey('Student',models.DO_NOTHING,db_column='studentid',blank=True, null=True)
+class ScheduledClass(models.Model):
+    schedule_id = models.IntegerField(db_column='schedule_id', null=False, primary_key=True)
+    class_number = models.IntegerField(db_column='class_number', null=False)
+    section = models.IntegerField(db_column='section', null=False)
 
     class Meta:
         managed = False
-        db_table = 'scheduled'
-        unique_together = (('roomid', 'studentid'),)
+        db_table = 'scheduled_class'
+        unique_together = (('schedule_id', 'class_number', 'section'),)
+
+    def to_dict(self):
+        from school_app.models import Class
+
+        try:
+            class_obj = Class.objects.get(class_number=self.class_number, section=self.section)
+            class_dict = class_obj.to_dict()
+        except Class.DoesNotExist:
+            class_dict = None
+
+        return {
+            'schedule_id': int(self.schedule_id),
+            'class': class_dict,
+        }
+
+# class ScheduledClass(models.Model):
+#
+#     roomid = models.OneToOneField('ClassRoom', models.DO_NOTHING, db_column='roomid', primary_key=True)
+#     studentid = models.ForeignKey('Student',models.DO_NOTHING,db_column='studentid',blank=True, null=True)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'scheduled'
+#         unique_together = (('roomid', 'studentid'),)
 
         
 class School_member(models.Model):
@@ -388,12 +495,17 @@ class School_member(models.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "full_name": self.first_name + " " + self.last_name,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "phone_number": self.phone_number,
             "email": self.email,
             "date_of_birth": self.date_of_birth
         }
+
+    @property
+    def is_authenticated(self):
+        return True
     
     class Meta:
         managed = False
@@ -401,7 +513,13 @@ class School_member(models.Model):
 
 class Student(models.Model):
     studentid = models.OneToOneField(School_member, models.DO_NOTHING, db_column='studentid', primary_key=True)
-    scheduleid = models.IntegerField(blank=True, null=True)
+    schedule_id = models.IntegerField(db_column='scheduleid')
+
+    def to_dict(self):
+        return {
+            'data': self.studentid.to_dict(),
+            'schedule_id': self.schedule_id,
+        }
 
     class Meta:
         managed = False
@@ -410,9 +528,13 @@ class Student(models.Model):
 
 class Teacher(models.Model):
     teacherid = models.OneToOneField(School_member, models.DO_NOTHING, db_column='teacherid', primary_key=True)
+    # schedule_id = models.IntegerField(db_column='scheduleid')
 
     def to_dict(self):
-        return self.teacherid.to_dict()
+        return {
+            'data': self.teacherid.to_dict(),
+            # 'schedule_id': self.schedule_id,
+        }
 
     class Meta:
         managed = False

@@ -1,12 +1,10 @@
 import json
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from ..authentication import RequireAuthorization
+from ..utils import ipp
 from school_app.models import (
-    Attendance,
-    Schedule,
-    School_member,
-    Student,
     Teacher,
 )
 
@@ -17,7 +15,7 @@ def parse_request_data(request):
         return request.POST.dict()
 
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def default(request):
     if request.method == 'POST':
         pass
@@ -30,5 +28,10 @@ def default(request):
 
             result.append(member)
 
-        return JsonResponse(result, status=200, safe=False)
+        return Response(result, status=200)
 
+@api_view(['GET'])
+def handle_ipp(request, teacher_id):
+    result = ipp.get_teacher_ipp(teacher_id)
+
+    return Response(result, status=200)

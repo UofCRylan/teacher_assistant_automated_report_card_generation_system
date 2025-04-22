@@ -197,18 +197,18 @@ class Educates(models.Model):
         unique_together = (('teacherid', 'studentid'),)
 
 
-class Feedback(models.Model):
-    teacherid = models.OneToOneField('Teacher', models.DO_NOTHING, db_column='teacherid', primary_key=True)  # The composite primary key (teacherid, studentid, classnumber, section, letter) found, that is not supported. The first column is selected.
-    studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='studentid')
-    classnumber = models.ForeignKey(Class, models.DO_NOTHING, db_column='classnumber')
-    section = models.ForeignKey(Class, models.DO_NOTHING, db_column='section', to_field='section', related_name='feedback_section_set')
-    letter = models.ForeignKey('FinalGrade', models.DO_NOTHING, db_column='letter')
-    comment = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'feedback'
-        unique_together = (('teacherid', 'studentid', 'classnumber', 'section', 'letter'),)
+# class Feedback(models.Model):
+#     teacherid = models.OneToOneField('Teacher', models.DO_NOTHING, db_column='teacherid', primary_key=True)  # The composite primary key (teacherid, studentid, classnumber, section, letter) found, that is not supported. The first column is selected.
+#     studentid = models.ForeignKey('Student', models.DO_NOTHING, db_column='studentid')
+#     classnumber = models.ForeignKey(Class, models.DO_NOTHING, db_column='classnumber')
+#     section = models.ForeignKey(Class, models.DO_NOTHING, db_column='section', to_field='section', related_name='feedback_section_set')
+#     letter = models.ForeignKey('FinalGrade', models.DO_NOTHING, db_column='letter')
+#     comment = models.TextField(blank=True, null=True)
+#
+#     class Meta:
+#         managed = False
+#         db_table = 'feedback'
+#         unique_together = (('teacherid', 'studentid', 'classnumber', 'section', 'letter'),)
 
 
 class FinalGrade(models.Model):

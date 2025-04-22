@@ -1,15 +1,9 @@
 import json
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from school_app.models import (
-    Attendance,
-    Schedule,
-    School_member,
-    Student,
-    Teacher,
-    Class,
-)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from ..authentication import RequireAuthorization
+from rest_framework.permissions import IsAuthenticated
+from ..utils import manager, grades, feedback, attendance
 
 def parse_request_data(request):
     try:
@@ -18,24 +12,127 @@ def parse_request_data(request):
         return request.POST.dict()
 
 
-@csrf_exempt
-def default(request):
-    if request.method == 'POST':
-        pass
+@api_view(['POST', 'PUT'])
+@permission_classes([IsAuthenticated])
+@RequireAuthorization(['teacher', 'admin'])
+def default(request, user_type):
+    data = parse_request_data(request)
+    class_id = data['class_id']
+    section_id = data['section_id']
+    class_name = data['class_name']
+    subject = data['subject']
+    time_start = data['time_start']
+    time_end = data['time_end']
+    teacher_id = data['teacher_id']
+    room_id = data['room_id']
+
+    if class_id and section_id and class_name and subject and time_start and time_end and teacher_id and room_id:
+        if request.method == 'POST':
+            result = manager.create_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id)
+            return Response(result['message'], status=result['status'])
+
+        if request.method == 'PUT':
+            result = manager.edit_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id)
+
+            return Response(result['message'], status=result['status'])
+    else:
+        return Response({"message": "Missing required fields"}, status=400)
+
+@api_view(['GET'])
+def get_class(request, class_id, section_id):
+    result = manager.get_class(class_id, section_id)
+    return Response(result['message'], status=result['status'])
+
+@api_view(['GET', 'POST', 'PUT'])
+def get_grades(request, class_id, section_id):
     if request.method == 'GET':
-        class_id = request.GET.get('id')
-        section_id = request.GET.get('section')
+        result = grades.get_grades(class_id, section_id)
 
-        if not class_id or not section_id:
-            return JsonResponse({"message": "Missing class id and section id"}, status=400, safe=False)
+        return Response(result, status=200)
+    else:
+        data = parse_request_data(request)
+        result = grades.update_grades(data)
 
-        class_id = int(class_id)
-        section_id = int(section_id)
+        return Response(result['message'], status=result['status'])
 
-        try:
-            result = Class.objects.get(class_number=class_id, section=section_id)
+@api_view(['GET'])
+def get_feedbacks(request, class_id, section_id):
+    result = feedback.get_feedbacks(class_id, section_id)
 
-            return JsonResponse(result.to_dict(), status=200, safe=False)
+    return Response(result, status=200)
 
-        except Class.DoesNotExist:
-            return JsonResponse({}, status=404, safe=False)
+@api_view(['GET', 'POST', 'PUT'])
+def handle_grade(request, class_id, section_id, student_id):
+    if request.method == 'GET':
+        result = grades.get_grade(class_id, section_id, student_id)
+        print("RESULT: ", result)
+        if result:
+            return Response(result, status=200)
+        else:
+            return Response(data=None, status=200)
+
+    else:
+        data = parse_request_data(request)
+        letter = data['letter']
+
+        if letter:
+            result = grades.update_grade(class_id, section_id, student_id, letter)
+            return Response(result['message'], status=result['status'])
+        else:
+            return Response({"message": "Missing required fields"}, status=400)
+
+@api_view(['GET', 'POST', 'PUT'])
+def handle_feedback(request, class_id, section_id, student_id):
+    if request.method == 'GET':
+        result = feedback.get_feedback(class_id, section_id, student_id)
+        return Response(result, status=200)
+
+    else:
+        data = parse_request_data(request)
+        letter = data['letter']
+        comment = data['comment']
+
+        if letter and comment:
+            result = feedback.update_feedback(class_id, section_id, student_id, letter)
+            return Response(result['message'], status=result['status'])
+        else:
+            return Response({"message": "Missing required fields"}, status=400)
+
+@api_view(['GET', 'POST', 'PUT'])
+def handle_attendance(request, class_id, section_id):
+    if request.method == 'GET':
+        result = attendance.get_all_attendance(class_id, section_id)
+        return Response(result, status=200)
+
+    elif request.method == 'PUT':
+        data = parse_request_data(request)
+        result = attendance.update_attendance(class_id, section_id, data)
+
+        return Response(result, status=200)
+
+@api_view(['GET'])
+def get_attendance(request):
+    result = attendance.get_attendance(request.user.id)
+
+    return Response(result, status=200)
+
+
+@api_view(['GET'])
+def get_class_students(request, class_id, section_id):
+    result = manager.get_students(class_id, section_id)
+
+    return Response(result, status=200)
+
+
+@api_view(['POST', 'PUT'])
+@permission_classes([IsAuthenticated])
+@RequireAuthorization(['teacher'])
+def update_feedback(request, user_type, class_id, section_id, student_id):
+    print(user_type, class_id, section_id, student_id)
+    data = parse_request_data(request)
+
+    student_feedback = data['feedback']
+
+    result = feedback.update_feedback(class_id, section_id, student_id, request.user.id, student_feedback)
+
+    return Response(result['message'], status=result['status'])

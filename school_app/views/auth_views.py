@@ -1,10 +1,9 @@
 import json
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from school_app.models import (
-    Attendance,
-    Schedule,
     School_member,
     Student,
     Teacher,
@@ -16,8 +15,7 @@ def parse_request_data(request):
     except:
         return request.POST.dict()
 
-
-@csrf_exempt
+@api_view(['POST'])
 def auth(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -25,7 +23,7 @@ def auth(request):
         password = data.get('password')
         
         if not email or not password:
-            return JsonResponse({'error': 'Email and password are required'}, status=400)
+            return Response({'error': 'Email and password are required'}, status=400)
         
         # Check if user exists with this email and password
         try:
@@ -50,15 +48,29 @@ def auth(request):
                 pass
             
             if user_type:
-                return JsonResponse({
+                user = {
                     'success': True,
                     'user_type': user_type,
                     'user_id': user_id,
                     'first_name': member.first_name,
                     'last_name': member.last_name
-                })
+                }
+
+                refresh_token = RefreshToken.for_user(member)
+
+                user['refresh'] = str(refresh_token)
+                user['access'] = str(refresh_token.access_token)
+
+                return Response(user, status=200)
             else:
-                return JsonResponse({'error': 'User is not registered as student or teacher'}, status=403)
+                return Response({'error': 'User is not registered as student or teacher'}, status=403)
                 
         except School_member.DoesNotExist:
-            return JsonResponse({'error': 'Invalid email or password'}, status=401)
+            return Response({'error': 'Invalid email or password'}, status=401)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def me(request):
+    print(request.user)
+
+    return Response(request.user.to_dict(), 200)

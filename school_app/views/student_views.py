@@ -1,11 +1,14 @@
 import json
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from ..utils import ipp, feedback
+from ..authentication import RequireAuthorization
 from school_app.models import (
     Schedule,
     Attendance,
-    Student, Teacher,
+    Student,
+    Teacher,
 )
 
 def parse_request_data(request):
@@ -15,7 +18,7 @@ def parse_request_data(request):
         return request.POST.dict()
 
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def default(request):
     if request.method == 'POST':
         pass
@@ -28,10 +31,10 @@ def default(request):
 
             result.append(member)
 
-        return JsonResponse(result, status=200, safe=False)
+        return Response(result, status=200)
     
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def student_information(request, student_id):
     if request.method == 'POST':
         pass
@@ -39,11 +42,11 @@ def student_information(request, student_id):
         try:
             student_member = Student.objects.get(studentid=student_id)
 
-            return JsonResponse(student_member.studentid.to_dict(), status=200, safe=False)
+            return Response(student_member.studentid.to_dict(), status=200)
         except:
-            return JsonResponse({}, status=404)
+            return Response({}, status=404)
         
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def student_classes(request, student_id):
     if request.method == 'POST':
         pass
@@ -54,11 +57,11 @@ def student_classes(request, student_id):
 
             schedule = Schedule.objects.get()
 
-            return JsonResponse(student_member.studentid.to_dict(), status=200, safe=False)
+            return Response(student_member.studentid.to_dict(), status=200)
         except:
-            return JsonResponse({}, status=404)
+            return Response({}, status=404)
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
 def student_attendance(request, student_id):
     if request.method == 'POST':
         pass
@@ -70,7 +73,8 @@ def student_attendance(request, student_id):
             print(student_member.studentid.to_dict())
             print(Attendance.objects.filter(studentid=student_member).count())
 
-            attendance_records = Attendance.objects.filter(studentid=student_member).values('class_number', 'section', 'teacherid', 'studentid', 'date', 'status')
+            attendance_records = Attendance.objects.filter(studentid=student_member).values('class_number', 'section',
+                                                                                            'teacherid', 'studentid', 'date', 'status')
 
             for value in attendance_records:
                 teacher = Teacher.objects.get(teacherid=value['teacherid'])
@@ -85,6 +89,39 @@ def student_attendance(request, student_id):
 
                 result.append(value)
 
-            return JsonResponse(result, status=200, safe=False)
+            return Response(result, status=200)
         except:
-            return JsonResponse([], status=404, safe=False)
+            return Response([], status=404)
+
+
+@api_view(['GET'])
+def handle_ipp(request, student_id):
+    result = ipp.get_student_ipp(student_id)
+
+    return Response(result, status=200)
+
+@api_view(['GET'])
+def get_ipp(request, student_id, teacher_id):
+    print(student_id, teacher_id)
+    result = ipp.get_specific_ipp(student_id, teacher_id)
+    print(result)
+
+    return Response(result, status=200)
+
+@api_view(['POST', 'PUT'])
+@permission_classes([IsAuthenticated])
+@RequireAuthorization(['teacher'])
+def create_ipp(request, user_type, student_id):
+    print(user_type, student_id)
+    data = parse_request_data(request)
+
+    goals = data['goals']
+    e_a = data['e_a']
+    s_d = data['s_d']
+
+    result = ipp.update_ipp(request.user.id, student_id, goals, e_a, s_d)
+
+    return Response(result['message'], status=result['status'])
+
+
+
