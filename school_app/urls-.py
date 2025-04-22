@@ -30,4 +30,6 @@ urlpatterns = [
     path('student/', views.student_view, name='student_view'),
     path('teacher/', views.teacher_view, name='teacher_view'),
     path("api/reportcard", views.reportcard_view, name="reportcard"),
+    path("api/feedback-template", views.feedback_template_view),
+    path("api/enrol-class", views.enrol_class),
 ]
