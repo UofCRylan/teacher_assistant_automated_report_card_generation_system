@@ -884,8 +884,126 @@ def teacher_view(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
 
+# 28) Feedback Template
+import json
+from django.http  import JsonResponse, HttpResponse, HttpResponseNotAllowed
+from django.views.decorators.csrf import csrf_exempt
 
-#28) Report Card Generation
+from .models import FeedbackTemplate, FinalGrade
+
+@csrf_exempt
+def feedback_template_view(request):
+    """
+    GET  /api/feedback‑template?letter=A&subject=Math%202
+    POST /api/feedback‑template                (body = JSON)
+    """
+    if request.method == "GET":
+        letter  = request.GET.get("letter")
+        subject = request.GET.get("subject")
+
+        qs = FeedbackTemplate.objects.all()
+        if letter:
+            qs = qs.filter(letter_id=letter)
+        if subject:
+            qs = qs.filter(subject=subject)
+
+        data = [
+            {
+                "id":        ft.id,
+                "letter":    ft.letter_id,
+                "subject":   ft.subject,
+                "template":  ft.template,
+            }
+            for ft in qs
+        ]
+        return JsonResponse(data, safe=False)
+
+    if request.method == "POST":
+        body = json.loads(request.body)
+        ft   = FeedbackTemplate.objects.create(
+            letter   = FinalGrade.objects.get(pk=body["letter"]),
+            subject  = body["subject"],
+            template = body["template"],
+        )
+        return JsonResponse(
+            {"id": ft.id, "status": "created"},
+            status=201
+        )
+
+    return HttpResponseNotAllowed(["GET", "POST"])
+
+
+# 29) Enrol Class
+import json
+from datetime              import time
+from django.http           import JsonResponse, HttpResponseNotAllowed
+from django.views.decorators.csrf import csrf_exempt
+from .models               import Class, Student, Includes
+from .utils                import clashes_with_any
+
+
+def _int_to_time(minutes: int) -> time:
+    return time(hour=minutes // 60, minute=minutes % 60)
+
+
+@csrf_exempt
+def enrol_class(request):
+    """
+    POST /api/enrol-class
+    {
+        "student_id": 312,
+        "class_number": 42
+    }
+    –––
+    • 409 Conflict → timetable overlap
+    • 201 Created  → success
+    """
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    body = json.loads(request.body or "{}")
+    student_id   = body.get("student_id")
+    class_number = body.get("class_number")
+
+    if not (student_id and class_number):
+        return JsonResponse({"error": "student_id and class_number required"},
+                            status=400)
+
+    try:
+        new_cls = Class.objects.get(pk=class_number)
+        Student.objects.get(pk=student_id)          # 404 if no such student
+    except (Class.DoesNotExist, Student.DoesNotExist):
+        return JsonResponse({"error": "Student or class not found"}, status=404)
+
+    # ❶ Collect ALL existing intervals for that student
+    existing_intervals = (
+        Class.objects
+             .filter(includes__studentid_id=student_id)
+             .values_list("time_start", "time_end")
+    )
+    intervals = [
+        (_int_to_time(s), _int_to_time(e))       # → datetime.time
+        for s, e in existing_intervals
+    ]
+
+    # ❷ Check overlap
+    if clashes_with_any(_int_to_time(new_cls.time_start),
+                        _int_to_time(new_cls.time_end),
+                        intervals):
+        return JsonResponse(
+            {"error": "Time conflict – class not added"},
+            status=409
+        )
+
+    # ❸ No conflict → create the Includes (or Assigned) row
+    Includes.objects.create(
+        studentid_id   = student_id,
+        class_number_id= new_cls.class_number,
+        section_id     = new_cls.section,
+    )
+    return JsonResponse({"status": "enrolled"}, status=201)
+    
+#30) Report Card Generation
 
 import io, json
 from pathlib import Path
