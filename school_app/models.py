@@ -296,6 +296,32 @@ class Feedback(models.Model):
         return f'{self.student_id} – {self.class_no}:{self.section} ⇒ {self.letter_id}'
 
 
+class feedback_template(models.Model):
+    """
+    Holds one reusable ‘boiler‑plate’ comment for a given subject & final grade.
+    """
+    id        = models.AutoField(primary_key=True)
+    letter    = models.ForeignKey('final_grade',models.DO_NOTHING,db_column="letter")
+    subject   = models.CharField(max_length=60)          # e.g. “Math 2”
+    template  = models.TextField()                       # e.g. “{student} received …”
+
+    class Meta:
+        db_table = "feedback_template"    # ← must match the physical table
+        verbose_name = "Feedback template"
+        verbose_name_plural = "Feedback templates"
+
+    def __str__(self):
+        return f"{self.subject} – {self.letter_id}"
+
+class final_grade(models.Model):
+    letter = models.CharField(primary_key=True, max_length=45)
+    word = models.CharField(max_length=45, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'final_grade'
+
+
 
 class final_grade(models.Model):
     letter = models.CharField(primary_key=True, max_length=45)
@@ -310,6 +336,7 @@ class final_grade(models.Model):
     class Meta:
         managed = False
         db_table = 'final_grade'
+        
 
 
 class individual_progress_plan(models.Model):
