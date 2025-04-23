@@ -2,17 +2,9 @@ import json
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from ..authentication import RequireAuthorization
+from ..authentication import require_authorization
 from ..utils import ipp
-from school_app.models import (
-    Teacher,
-)
-
-def parse_request_data(request):
-    try:
-        return json.loads(request.body.decode('utf-8'))
-    except:
-        return request.POST.dict()
+from school_app.models import Teacher
 
 
 @api_view(['GET', 'POST'])
@@ -24,7 +16,7 @@ def default(request):
         all_teachers = Teacher.objects.all()
 
         for person in all_teachers:
-            member = person.teacherid.to_dict()
+            member = person.teacher_id.to_dict()
 
             result.append(member)
 

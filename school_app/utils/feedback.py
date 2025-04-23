@@ -1,4 +1,4 @@
-from school_app.models import Feedback, Student, ReceivesGrade
+from school_app.models import Feedback, Student
 from django.db import connection
 
 
@@ -69,7 +69,7 @@ def update_feedback(class_id, section_id, student_id, teacher_id, comment):
 
 def get_feedback(class_id, section_id, student_id):
     try:
-        student = Student.objects.get(studentid=student_id)
+        student = Student.objects.get(student_id=student_id)
         feedback = Feedback.objects.get(class_no=class_id, section=section_id, student=student)
         return feedback.to_dict()
 

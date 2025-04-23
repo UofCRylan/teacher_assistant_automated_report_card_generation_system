@@ -1,46 +1,45 @@
 import json
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from ..authentication import RequireAuthorization
+from ..authentication import require_authorization
 from rest_framework.permissions import IsAuthenticated
-from ..utils import manager, grades, feedback, attendance
-
-def parse_request_data(request):
-    try:
-        return json.loads(request.body.decode('utf-8'))
-    except:
-        return request.POST.dict()
+from ..utils import manager, grades, feedback, attendance, class_room
+from ..utils.data_handler import parse_request_data
 
 
-@api_view(['POST', 'PUT'])
+@api_view(['GET', 'POST', 'PUT'])
 @permission_classes([IsAuthenticated])
-@RequireAuthorization(['teacher', 'admin'])
+@require_authorization(['teacher', 'admin'])
 def default(request, user_type):
-    data = parse_request_data(request)
-    class_id = data['class_id']
-    section_id = data['section_id']
-    class_name = data['class_name']
-    subject = data['subject']
-    time_start = data['time_start']
-    time_end = data['time_end']
-    teacher_id = data['teacher_id']
-    room_id = data['room_id']
+    if request.method != "GET":
+        data = parse_request_data(request)
+        class_id = data['class_id']
+        section_id = data['section_id']
+        class_name = data['class_name']
+        subject = data['subject']
+        time_start = data['time_start']
+        time_end = data['time_end']
+        teacher_id = data['teacher_id']
+        room_id = data['room_id']
 
-    if class_id and section_id and class_name and subject and time_start and time_end and teacher_id and room_id:
-        if request.method == 'POST':
-            result = manager.create_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id)
+
+        if class_id and section_id and class_name and subject and time_start and time_end and teacher_id and room_id:
+            print("IN")
+            result = manager.update_class(class_id, section_id, class_name,
+                                          subject, time_start, time_end, teacher_id, room_id)
+            print(result)
+
             return Response(result['message'], status=result['status'])
+        else:
+            return Response({"message": "Missing required fields"}, status=400)
 
-        if request.method == 'PUT':
-            result = manager.edit_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id)
-
-            return Response(result['message'], status=result['status'])
     else:
-        return Response({"message": "Missing required fields"}, status=400)
+        return Response(manager.get_classes(), status=200)
 
 @api_view(['GET'])
 def get_class(request, class_id, section_id):
     result = manager.get_class(class_id, section_id)
+
     return Response(result['message'], status=result['status'])
 
 @api_view(['GET', 'POST', 'PUT'])
@@ -72,14 +71,15 @@ def handle_grade(request, class_id, section_id, student_id):
             return Response(data=None, status=200)
 
     else:
-        data = parse_request_data(request)
-        letter = data['letter']
-
-        if letter:
-            result = grades.update_grade(class_id, section_id, student_id, letter)
-            return Response(result['message'], status=result['status'])
-        else:
-            return Response({"message": "Missing required fields"}, status=400)
+        pass
+        # data = parse_request_data(request)
+        # letter = data['letter']
+        #
+        # if letter:
+        #     result = grades.update_grade(class_id, section_id, student_id, letter)
+        #     return Response(result['message'], status=result['status'])
+        # else:
+        #     return Response({"message": "Missing required fields"}, status=400)
 
 @api_view(['GET', 'POST', 'PUT'])
 def handle_feedback(request, class_id, section_id, student_id):
@@ -126,9 +126,8 @@ def get_class_students(request, class_id, section_id):
 
 @api_view(['POST', 'PUT'])
 @permission_classes([IsAuthenticated])
-@RequireAuthorization(['teacher'])
+@require_authorization(['teacher'])
 def update_feedback(request, user_type, class_id, section_id, student_id):
-    print(user_type, class_id, section_id, student_id)
     data = parse_request_data(request)
 
     student_feedback = data['feedback']
@@ -136,3 +135,10 @@ def update_feedback(request, user_type, class_id, section_id, student_id):
     result = feedback.update_feedback(class_id, section_id, student_id, request.user.id, student_feedback)
 
     return Response(result['message'], status=result['status'])
+
+
+@api_view(['GET'])
+def get_rooms(request):
+    result = class_room.get_available_rooms()
+
+    return Response(data=result, status=200)

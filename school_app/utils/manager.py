@@ -1,54 +1,85 @@
-from school_app.models import Schedule, ScheduledClass
+from school_app.models import ScheduledClass
 from ..models import Class, Teacher, ClassRoom, Student
 
-def create_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id):
+from django.db import connection
+from django.db.utils import IntegrityError
+from ..models import Teacher, ClassRoom, Class
+
+
+def update_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id):
     try:
-        teacher = Teacher.objects.get(teacherid=teacher_id)
-        print(room_id)
-        room = ClassRoom.objects.get(roomid=room_id)
+        # First verify the teacher and room exist
+        try:
+            teacher = Teacher.objects.get(teacher_id=teacher_id)
+            room = ClassRoom.objects.get(room_id=room_id)
+        except Teacher.DoesNotExist:
+            return {
+                "message": {"message": "Teacher not found"},
+                "status": 400
+            }
+        except ClassRoom.DoesNotExist:
+            return {
+                "message": {"message": "Classroom not found"},
+                "status": 400
+            }
 
-        new_class = Class(class_number=class_id, section=section_id, class_name=class_name, subject=subject,
-                          time_start=time_start, time_end=time_end, teacher_id=teacher, room_id=room)
+        # Check if the class exists using raw SQL
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT COUNT(*) FROM Class WHERE class_number = %s AND section = %s",
+                [class_id, section_id]
+            )
+            class_exists = cursor.fetchone()[0] > 0
 
-        new_class.save()
+        if class_exists:
+            # Update existing class using raw SQL
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE Class 
+                    SET class_name = %s, 
+                        subject = %s, 
+                        time_start = %s, 
+                        time_end = %s, 
+                        teacher_id = %s, 
+                        room_id = %s
+                    WHERE class_number = %s AND section = %s
+                    """,
+                    [class_name, subject, time_start, time_end,
+                     teacher.teacher_id.id, room.room_id, class_id, section_id]
+                )
 
-        print("Made")
+            return {
+                "message": {"message": "Updated class"},
+                "status": 200
+            }
+        else:
+            # Create new class using raw SQL
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO Class 
+                    (class_number, section, class_name, subject, time_start, time_end, teacher_id, room_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    [class_id, section_id, class_name, subject, time_start, time_end,
+                     teacher.teacher_id.id, room.room_id]
+                )
 
+            return {
+                "message": {"message": "Created class"},
+                "status": 201
+            }
+
+    except IntegrityError as e:
         return {
-            "message": {"message": "Made class"},
-            "status": 201
-        }
-
-    except Teacher.DoesNotExist:
-        return {
-            "message": {"message": "Could not make the class"},
+            "message": {"message": f"Database integrity error: {str(e)}"},
             "status": 400
         }
-
-def edit_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id):
-    try:
-        the_class = Class.objects.get(class_number=class_id, section=section_id)
-        teacher = Teacher.objects.get(teacherid=teacher_id)
-        room = ClassRoom.objects.get(roomid=room_id)
-
-        the_class.class_name = class_name
-        the_class.subject = subject
-        the_class.time_start = time_start
-        the_class.time_end = time_end
-        the_class.teacher_id = teacher
-        the_class.room_id = room
-
-        the_class.save()
-
+    except Exception as e:
         return {
-            "message": {"message": "Updated class"},
-            "status": 201
-        }
-
-    except Teacher.DoesNotExist:
-        return {
-            "message": {"message": "Could not make the class"},
-            "status": 400
+            "message": {"message": f"Could not update or create class: {str(e)}"},
+            "status": 500
         }
 
 def get_class(class_id, section_id):
@@ -65,16 +96,15 @@ def get_class(class_id, section_id):
             "status": 404
         }
 
-def get_classes(schedule_id):
-    try:
-        schedule = Class.objects.get(schedule_id=schedule_id)
+def get_classes():
+    results = []
 
-        return None
+    classes = Class.objects.all()
 
-    except Schedule.DoesNotExist:
-        pass
+    for cls in classes:
+        results.append(cls.to_dict())
 
-    return None
+    return results
 
 def get_students(class_id, section_id):
     result = []

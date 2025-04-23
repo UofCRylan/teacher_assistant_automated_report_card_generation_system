@@ -4,6 +4,7 @@ from ..views import class_views
 urlpatterns = [
     path('', class_views.default, name='default'),
     path('attendance', class_views.get_attendance, name='get-student-attendance'),
+    path('rooms', class_views.get_rooms, name='get-class-rooms'),
     path('<int:class_id>/section/<int:section_id>', class_views.get_class, name='get-class'),
     path('<int:class_id>/section/<int:section_id>/grade', class_views.get_grades, name='get-grades'),
     path('<int:class_id>/section/<int:section_id>/feedback', class_views.get_feedbacks, name='get-feedbacks'),

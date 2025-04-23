@@ -3,17 +3,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from school_app.models import (
-    School_member,
-    Student,
-    Teacher,
-)
+from school_app.models import SchoolMember, Student, Teacher
 
-def parse_request_data(request):
-    try:
-        return json.loads(request.body.decode('utf-8'))
-    except:
-        return request.POST.dict()
 
 @api_view(['POST'])
 def auth(request):
@@ -27,25 +18,22 @@ def auth(request):
         
         # Check if user exists with this email and password
         try:
-            member = School_member.objects.get(email=email, password=password)
+            member = SchoolMember.objects.get(email=email, password=password)
             
             # Check if the member is a student or teacher
             user_type = None
             user_id = None
             
-            try:
-                Student.objects.get(studentid=member.id)
+            if Student.objects.filter(student_id=member.id).exists():
                 user_type = 'student'
                 user_id = member.id
-            except Student.DoesNotExist:
-                pass
             
-            try:
-                Teacher.objects.get(teacherid=member.id)
+            elif Teacher.objects.filter(teacher_id=member.id).exists():
                 user_type = 'teacher'
                 user_id = member.id
-            except Teacher.DoesNotExist:
-                pass
+            else:
+                user_type = 'admin'
+                user_id = member.id
             
             if user_type:
                 user = {
@@ -65,7 +53,7 @@ def auth(request):
             else:
                 return Response({'error': 'User is not registered as student or teacher'}, status=403)
                 
-        except School_member.DoesNotExist:
+        except SchoolMember.DoesNotExist:
             return Response({'error': 'Invalid email or password'}, status=401)
 
 @api_view(['GET'])

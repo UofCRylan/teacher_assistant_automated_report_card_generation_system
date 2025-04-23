@@ -1,46 +1,6 @@
 from django.db import connection
-from school_app.models import ReceivesGrade, Student, final_grade
+from school_app.models import ReceivesGrade, Student, FinalGrade
 
-
-# def update_grade(class_id, section_id, student_id, letter):
-#     try:
-#         student = Student.objects.get(studentid=student_id)
-#
-#         try:
-#             letter = final_grade.objects.get(letter=letter)
-#
-#             try:
-#                 print("ME")
-#                 grade = ReceivesGrade.objects.get(class_no=class_id, section=section_id, student=student)
-#                 grade.letter = letter
-#
-#                 grade.save()
-#
-#                 return {
-#                     "message": "Successfully updated grade",
-#                     "status": 200
-#                 }
-#
-#             except ReceivesGrade.DoesNotExist:
-#                 print("ME1")
-#                 grade = ReceivesGrade(class_no=class_id, section=section_id, student=student, letter=letter)
-#
-#                 grade.save()
-#
-#                 return {
-#                     "message": "Successfully created grade",
-#                     "status": 201
-#                 }
-#         except final_grade.DoesNotExist:
-#             return {
-#                 "message": "Could not find that letter",
-#                 "status": 404
-#             }
-#     except Student.DoesNotExist:
-#         return {
-#             "message": "Student does not exist",
-#             "status": 404
-#         }
 
 def update_grades(records):
     cursor = connection.cursor()
@@ -120,16 +80,16 @@ def update_grades(records):
         return {"message": f"Successfully processed {len(results)} grades", "status": 200, "details": results}
 
 
-
 def get_grade(class_id, section_id, student_id):
     try:
-        student = Student.objects.get(studentid=student_id)
+        student = Student.objects.get(student_id=student_id)
         grade = ReceivesGrade.objects.get(class_no=class_id, section=section_id, student=student)
 
         return grade.to_dict()
 
     except ReceivesGrade.DoesNotExist:
         return None
+
 
 def get_grades(class_id, section_id):
     result = []

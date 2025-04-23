@@ -1,4 +1,4 @@
-from school_app.models import individual_progress_plan
+from school_app.models import IndividualProgressPlan
 from django.db import connection
 
 def update_ipp(teacher_id, student_id, goals, s_d, e_a):
@@ -48,7 +48,7 @@ def update_ipp(teacher_id, student_id, goals, s_d, e_a):
 
 def get_student_ipp(student_id):
     result = []
-    ipps = individual_progress_plan.objects.filter(studentid=student_id)
+    ipps = IndividualProgressPlan.objects.filter(student=student_id)
 
     for ipp in ipps:
         result.append(ipp.to_dict())
@@ -57,16 +57,16 @@ def get_student_ipp(student_id):
 
 def get_specific_ipp(student_id, teacher_id):
     try:
-        ipp = individual_progress_plan.objects.get(studentid=student_id, teacherid=teacher_id)
+        ipp = IndividualProgressPlan.objects.get(student=student_id, teacher=teacher_id)
         return ipp.to_dict()
 
-    except individual_progress_plan.DoesNotExist:
+    except IndividualProgressPlan.DoesNotExist:
         return None
 
 
 def get_teacher_ipp(teacher_id):
     result = []
-    ipps = individual_progress_plan.objects.filter(teacherid=teacher_id)
+    ipps = IndividualProgressPlan.objects.filter(teacher=teacher_id)
 
     for ipp in ipps:
         result.append(ipp.to_dict())

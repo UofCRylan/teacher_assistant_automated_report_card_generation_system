@@ -1,9 +1,9 @@
-from school_app.models import Attendance, Student, Teacher
+from school_app.models import Attendance
 
 def get_attendance(student_id):
     result = []
 
-    records = Attendance.objects.filter(studentid=student_id)
+    records = Attendance.objects.filter(student=student_id)
 
     for record in records:
         result.append(record.to_dict())

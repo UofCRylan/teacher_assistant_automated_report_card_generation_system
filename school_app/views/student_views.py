@@ -2,20 +2,10 @@ import json
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from ..utils import ipp, feedback
-from ..authentication import RequireAuthorization
-from school_app.models import (
-    Schedule,
-    Attendance,
-    Student,
-    Teacher,
-)
-
-def parse_request_data(request):
-    try:
-        return json.loads(request.body.decode('utf-8'))
-    except:
-        return request.POST.dict()
+from ..utils import ipp
+from ..utils.data_handler import parse_request_data
+from ..authentication import require_authorization
+from school_app.models import Attendance, Student, Teacher
 
 
 @api_view(['GET', 'POST'])
@@ -26,8 +16,8 @@ def default(request):
         result = []
         all_students = Student.objects.all()
 
-        for person in all_students:
-            member = person.studentid.to_dict()
+        for student in all_students:
+            member = student.student_id.to_dict()
 
             result.append(member)
 
@@ -40,26 +30,12 @@ def student_information(request, student_id):
         pass
     elif request.method == "GET":
         try:
-            student_member = Student.objects.get(studentid=student_id)
+            student_member = Student.objects.get(student_id=student_id)
 
-            return Response(student_member.studentid.to_dict(), status=200)
+            return Response(student_member.student_id.to_dict(), status=200)
         except:
             return Response({}, status=404)
-        
-@api_view(['GET', 'POST'])
-def student_classes(request, student_id):
-    if request.method == 'POST':
-        pass
-    elif request.method == "GET":
-        try:
-            student_member = Student.objects.get(studentid=student_id)
-            schedule_id = student_member.scheduleid
 
-            schedule = Schedule.objects.get()
-
-            return Response(student_member.studentid.to_dict(), status=200)
-        except:
-            return Response({}, status=404)
 
 @api_view(['GET', 'POST'])
 def student_attendance(request, student_id):
@@ -68,16 +44,14 @@ def student_attendance(request, student_id):
     elif request.method == "GET":
         result = []
         try:
-            student_member = Student.objects.get(studentid=student_id)
+            student_member = Student.objects.get(student_id=student_id)
 
-            print(student_member.studentid.to_dict())
-            print(Attendance.objects.filter(studentid=student_member).count())
-
-            attendance_records = Attendance.objects.filter(studentid=student_member).values('class_number', 'section',
-                                                                                            'teacherid', 'studentid', 'date', 'status')
+            attendance_records = (Attendance.objects
+                                  .filter(student=student_member)
+                                  .values('class_number', 'section', 'teacherid', 'studentid', 'date', 'status'))
 
             for value in attendance_records:
-                teacher = Teacher.objects.get(teacherid=value['teacherid'])
+                teacher = Teacher.objects.get(teacher_id=value['teacherid'])
 
                 value['student'] = student_member.studentid.to_dict()
                 value['teacher'] = teacher.teacherid.to_dict()
@@ -102,17 +76,14 @@ def handle_ipp(request, student_id):
 
 @api_view(['GET'])
 def get_ipp(request, student_id, teacher_id):
-    print(student_id, teacher_id)
     result = ipp.get_specific_ipp(student_id, teacher_id)
-    print(result)
 
     return Response(result, status=200)
 
 @api_view(['POST', 'PUT'])
 @permission_classes([IsAuthenticated])
-@RequireAuthorization(['teacher'])
+@require_authorization(['teacher'])
 def create_ipp(request, user_type, student_id):
-    print(user_type, student_id)
     data = parse_request_data(request)
 
     goals = data['goals']
