@@ -884,12 +884,13 @@ def teacher_view(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
 
+
 # 28) Feedback Template
 import json
 from django.http  import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import FeedbackTemplate, FinalGrade
+from .models import feedback_template, final_grade
 
 @csrf_exempt
 def feedback_template_view(request):
@@ -901,7 +902,7 @@ def feedback_template_view(request):
         letter  = request.GET.get("letter")
         subject = request.GET.get("subject")
 
-        qs = FeedbackTemplate.objects.all()
+        qs = feedback_template.objects.all()
         if letter:
             qs = qs.filter(letter_id=letter)
         if subject:
@@ -920,8 +921,8 @@ def feedback_template_view(request):
 
     if request.method == "POST":
         body = json.loads(request.body)
-        ft   = FeedbackTemplate.objects.create(
-            letter   = FinalGrade.objects.get(pk=body["letter"]),
+        ft   = feedback_template.objects.create(
+            letter   = final_grade.objects.get(pk=body["letter"]),
             subject  = body["subject"],
             template = body["template"],
         )
@@ -932,176 +933,202 @@ def feedback_template_view(request):
 
     return HttpResponseNotAllowed(["GET", "POST"])
 
-
 # 29) Enrol Class
-import json
-from datetime              import time
-from django.http           import JsonResponse, HttpResponseNotAllowed
-from django.views.decorators.csrf import csrf_exempt
-from .models               import Class, Student, Includes
-from .utils                import clashes_with_any
-
-
-def _int_to_time(minutes: int) -> time:
-    return time(hour=minutes // 60, minute=minutes % 60)
-
-
+from .models import Student, Class, Assigned 
 @csrf_exempt
 def enrol_class(request):
     """
     POST /api/enrol-class
     {
-        "student_id": 312,
+        "student_id": 123,
         "class_number": 42
     }
-    –––
-    • 409 Conflict → timetable overlap
-    • 201 Created  → success
+    ── RESPONSES ─────────────────────────────────────────────
+    400 – bad JSON / missing keys
+    404 – unknown student or class
+    409 – section already full
+    201 – enrolled ✓
     """
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
 
-    body = json.loads(request.body or "{}")
-    student_id   = body.get("student_id")
-    class_number = body.get("class_number")
-
-    if not (student_id and class_number):
-        return JsonResponse({"error": "student_id and class_number required"},
-                            status=400)
 
     try:
-        new_cls = Class.objects.get(pk=class_number)
-        Student.objects.get(pk=student_id)          # 404 if no such student
-    except (Class.DoesNotExist, Student.DoesNotExist):
-        return JsonResponse({"error": "Student or class not found"}, status=404)
-
-    # ❶ Collect ALL existing intervals for that student
-    existing_intervals = (
-        Class.objects
-             .filter(includes__studentid_id=student_id)
-             .values_list("time_start", "time_end")
-    )
-    intervals = [
-        (_int_to_time(s), _int_to_time(e))       # → datetime.time
-        for s, e in existing_intervals
-    ]
-
-    # ❷ Check overlap
-    if clashes_with_any(_int_to_time(new_cls.time_start),
-                        _int_to_time(new_cls.time_end),
-                        intervals):
+        body          = json.loads(request.body)
+        student_id    = body["student_id"]
+        class_number  = body["class_number"]
+    except (json.JSONDecodeError, KeyError):
         return JsonResponse(
-            {"error": "Time conflict – class not added"},
-            status=409
+            {"error": "JSON body must contain student_id and class_number"},
+            status=400
         )
 
-    # ❸ No conflict → create the Includes (or Assigned) row
-    Includes.objects.create(
-        studentid_id   = student_id,
-        class_number_id= new_cls.class_number,
-        section_id     = new_cls.section,
+    try:
+        student = Student.objects.get(pk=student_id)
+        classes   = (Class.objects
+                         .select_related("room")   # need room.capacity
+                         .get(pk=class_number))
+    except (Student.DoesNotExist, Class.DoesNotExist):
+        return JsonResponse({"error": "student or class not found"}, status=404)
+
+
+    capacity = classes.room.capacity or 0              
+    enrolled = (Assigned.objects
+                           .filter(class_number=classes)  
+                           .count())
+
+    if capacity and enrolled >= capacity:
+        return JsonResponse({"error": "class is full"}, status=409)
+
+
+    Assigned.objects.create(
+        class_number=classes,
+        section=classes,        
+        student=student
     )
     return JsonResponse({"status": "enrolled"}, status=201)
-    
-#30) Report Card Generation
+
+#30) Report Card Generation (This should work) Internal Python PDF Generation used    
 
 import io, json
-from pathlib import Path
 from datetime import date
+from pathlib import Path
+
 from django.conf                import settings
-from django.http                import JsonResponse, HttpResponseNotAllowed
+from django.http                import (JsonResponse, HttpResponse, HttpResponseNotAllowed)
 from django.views.decorators.csrf import csrf_exempt
-from reportlab.lib              import colors
-from reportlab.lib.pagesizes    import letter
-from reportlab.lib.styles       import getSampleStyleSheet
-from reportlab.platypus         import (SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer)
-from .models import Student, ReceiveGrade      
+from django.views.decorators.http import require_http_methods
+
+from .models import Student, receives_grade
+
+
+def get_student_grades(student):
+    return (receives_grade.objects.filter(student=student).select_related("letter", "classes").order_by("classes__class_number"))
+
+
+def build_pdf_bytes(student, grades_qs):
+    """
+    Manually constructs a minimal PDF containing the student's report card.
+    """
+    buf = io.BytesIO()
+    w = buf.write
+
+    # 1) PDF header
+    w(b"%PDF-1.1\n%\xE2\xE3\xCF\xD3\n")
+
+    # 2) Objects
+    offsets = []
+
+    # obj 1: Catalog
+    offsets.append(buf.tell())
+    w(b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n")
+
+    # obj 2: Pages
+    offsets.append(buf.tell())
+    w(b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n")
+
+    # Prepare the content stream (page text)
+    lines = [
+        f"Report Card – {student.first_name} {student.last_name}",
+        f"Issued: {date.today():%B %d, %Y}",
+        "",
+    ]
+    for g in grades_qs:
+        subj   = g.klass.subject or ""
+        clsno  = g.klass.class_number
+        sect   = g.klass.section
+        letter = g.letter.letter if g.letter else ""
+        comm   = (g.comment or "")[:60]
+        lines.append(f"{subj} ({clsno}-{sect}): {letter} {comm}")
+
+    # Build PDF text drawing commands
+    text  = "BT\n/F1 12 Tf\n72 750 Td\n"
+    for line in lines:
+        # literal parentheses must be escaped
+        esc = line.replace("(", "\\(").replace(")", "\\)")
+        text += f"({esc}) Tj\n0 -14 Td\n"
+    text += "ET\n"
+    data_stream = text.encode("latin1")
+
+    # obj 3: Page definition
+    offsets.append(buf.tell())
+    w(b"3 0 obj\n")
+    w(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ")
+    w(b"/Contents 4 0 R /Resources << /Font << /F1 5 0 R>> >> >>\n")
+    w(b"endobj\n")
+
+    # obj 4: Content stream
+    offsets.append(buf.tell())
+    w(f"4 0 obj\n<< /Length {len(data_stream)} >>\nstream\n".encode("latin1"))
+    w(data_stream)
+    w(b"\nendstream\nendobj\n")
+
+    # obj 5: Font
+    offsets.append(buf.tell())
+    w(b"5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n")
+
+    # 3) Cross-reference table
+    xref_pos = buf.tell()
+    w(b"xref\n0 6\n0000000000 65535 f \n")
+    for off in offsets:
+        w(f"{off:010d} 00000 n \n".encode("latin1"))
+
+    # 4) Trailer
+    w(b"trailer\n<< /Size 6 /Root 1 0 R >>\n")
+    w(b"startxref\n")
+    w(str(xref_pos).encode("latin1"))
+    w(b"\n%%EOF")
+
+    return buf.getvalue()
+
+
+def save_pdf(pdf_bytes, student_id):
+    """
+    Saves the PDF into MEDIA_ROOT/reports/ and returns its public URL.
+    """
+    reports_dir = Path(settings.MEDIA_ROOT) / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    fname = f"reportcard_{student_id}_{date.today():%Y-%m-%d}.pdf"
+    path  = reports_dir / fname
+    path.write_bytes(pdf_bytes)
+    return settings.MEDIA_URL.rstrip("/") + "/reports/" + fname
 
 
 @csrf_exempt
-def reportcard_view(request):
+@require_http_methods(["GET", "POST"])
+def reportcard_view(request, student_id=None):
     """
-    POST /api/reportcard   { "student_id": 321 }
-    → {"pdf_url": "/media/reports/reportcard_321_2025‑04‑19.pdf"}
+    GET  /api/reportcard/<student_id>/ → streams PDF
+    POST /api/reportcard            → { "student_id": 123 }
+                                         ↪ { "pdf_url": "/media/reports/..." }
     """
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
+    # determine student_id
+    if request.method == "GET":
+        if student_id is None:
+            return JsonResponse({"error": "student_id missing in URL"}, status=400)
+    else:
+        try:
+            payload    = json.loads(request.body or "{}")
+            student_id = int(payload["student_id"])
+        except Exception:
+            return JsonResponse({"error": "student_id (int) required"}, status=400)
 
+    # fetch student
     try:
-        payload    = json.loads(request.body or "{}")
-        student_id = int(payload["student_id"])
-    except (KeyError, ValueError, TypeError):
-        return JsonResponse({"error": "student_id (int) required"}, status=400)
-
-    try:
-        student = Student.objects.select_related("studentid").get(pk=student_id)
+        student   = Student.objects.get(pk=student_id)
     except Student.DoesNotExist:
         return JsonResponse({"error": "student not found"}, status=404)
 
-    grades_qs = (
-        ReceiveGrade.objects
-        .filter(studentid=student)
-        .select_related("letter", "class_number", "section")
-        .order_by("class_number__class_number")
-    )
+    # fetch grades
+    grades_qs = get_student_grades(student)
 
-    buffer = io.BytesIO()
-    doc    = SimpleDocTemplate(
-        buffer,
-        pagesize=letter,
-        rightMargin=40, leftMargin=40,
-        topMargin=60,  bottomMargin=40,
-        title=f"Report Card {student_id}"
-    )
-    styles = getSampleStyleSheet()
-    story  = []
+    # build and save PDF
+    pdf_bytes = build_pdf_bytes(student, grades_qs)
+    public_url = save_pdf(pdf_bytes, student_id)
 
-    story.append(
-        Paragraph(
-            f"Report Card – {student.studentid.first_name} "
-            f"{student.studentid.last_name}",
-            styles["Title"]
-        )
-    )
-    story.append(Spacer(1, 12))
-    story.append(Paragraph(f"Issued: {date.today():%B %d, %Y}", styles["Normal"]))
-    story.append(Spacer(1, 18))
+    if request.method == "GET":
+        resp = HttpResponse(pdf_bytes, content_type="application/pdf")
+        resp["Content-Disposition"] = f'inline; filename="reportcard_{student_id}.pdf"'
+        return resp
 
-    table_data = [
-        ["Subject", "Class", "Letter", "Comment"]
-    ]
-    for g in grades_qs:
-        table_data.append([
-            g.class_number.subject or "",
-            f"{g.class_number.class_number}-{g.section.section}",
-            g.letter.letter,
-            getattr(g, "comment", "")[:85]  # safety truncate
-        ])
-
-    table_style = TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-        ("ALIGN", (2, 1), (2, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-        ("GRID", (0, 0), (-1, -1), 0.3, colors.black),
-    ])
-
-    tbl = Table(table_data, colWidths=[80, 60, 40, 280])
-    tbl.setStyle(table_style)
-    story.append(tbl)
-
-    doc.build(story)
-    pdf_bytes = buffer.getvalue()
-    buffer.close()
-
-
-    reports_dir = Path(settings.MEDIA_ROOT) / "reports"
-    reports_dir.mkdir(parents=True, exist_ok=True)
-
-    file_name = f"reportcard_{student_id}_{date.today():%Y-%m-%d}.pdf"
-    file_path = reports_dir / file_name
-    file_path.write_bytes(pdf_bytes)
-
-
-    return JsonResponse({"pdf_url": settings.MEDIA_URL + "reports/" + file_name})
+    return JsonResponse({"pdf_url": public_url}, status=201)
