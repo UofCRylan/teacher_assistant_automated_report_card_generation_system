@@ -17,14 +17,14 @@ const StudentAttendancePage = () => {
     const fetchStudentData = async () => {
       try {
         // Mock data - replace with actual API calls
-        const classesResponse = await scheduleHandler.getSchedule();
+        const classesResponse = await scheduleHandler.getUserSchedule();
         const attendanceResponse =
           await attendanceHandler.getAttendanceRecords();
 
         console.log("1: ", classesResponse);
         console.log("2: ", attendanceResponse);
 
-        setClasses(classesResponse.data);
+        setClasses(classesResponse.data.classes);
         setAttendanceRecords(attendanceResponse.data);
       } catch (error) {
         console.error("Error fetching student data:", error);
