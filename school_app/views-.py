@@ -990,12 +990,15 @@ def enrol_class(request):
 
 #30) Report Card Generation (This should work) Internal Python PDF Generation used    
 
-import io, json
+#30) Report Card Generation (This should work) Internal Python PDF Generation used  import io
+import io
+import json
 from datetime import date
 from pathlib import Path
 
-from django.conf                import settings
-from django.http                import (JsonResponse, HttpResponse, HttpResponseNotAllowed)
+from django.conf     import settings
+from django.shortcuts import get_object_or_404
+from django.http     import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -1003,79 +1006,84 @@ from .models import Student, receives_grade
 
 
 def get_student_grades(student):
-    return (receives_grade.objects.filter(student=student).select_related("letter", "classes").order_by("classes__class_number"))
+    """
+    Returns this student’s final grades ordered by class_number.
+    """
+    return (
+        receives_grade.objects
+        .filter(student=student)
+        .select_related("class_no", "letter")
+        .order_by("class_no__class_number")
+    )
 
 
 def build_pdf_bytes(student, grades_qs):
     """
-    Manually constructs a minimal PDF containing the student's report card.
+    Manually builds a minimal single‐page PDF listing each class & letter grade.
     """
     buf = io.BytesIO()
-    w = buf.write
+    w   = buf.write
 
-    # 1) PDF header
-    w(b"%PDF-1.1\n%\xE2\xE3\xCF\xD3\n")
-
-    # 2) Objects
+    # PDF header
+    w(b"%PDF-1.1\n%\xe2\xe3\xcf\xd3\n")
     offsets = []
 
-    # obj 1: Catalog
+    # 1) Catalog
     offsets.append(buf.tell())
     w(b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n")
 
-    # obj 2: Pages
+    # 2) Pages
     offsets.append(buf.tell())
     w(b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n")
 
-    # Prepare the content stream (page text)
+    # 3) Compose lines
+    name = f"{student.studentid.first_name} {student.studentid.last_name}"
     lines = [
-        f"Report Card – {student.first_name} {student.last_name}",
+        f"Report Card – {name}",
         f"Issued: {date.today():%B %d, %Y}",
-        "",
+        ""
     ]
     for g in grades_qs:
-        subj   = g.klass.subject or ""
-        clsno  = g.klass.class_number
-        sect   = g.klass.section
-        letter = g.letter.letter if g.letter else ""
-        comm   = (g.comment or "")[:60]
-        lines.append(f"{subj} ({clsno}-{sect}): {letter} {comm}")
+        cls    = g.class_no
+        subj   = cls.subject or "(no subject)"
+        num    = cls.class_number
+        sect   = g.section
+        letter = g.letter.letter if g.letter else "(no grade)"
+        lines.append(f"{subj} ({num}-{sect}): {letter}")
 
-    # Build PDF text drawing commands
-    text  = "BT\n/F1 12 Tf\n72 750 Td\n"
-    for line in lines:
-        # literal parentheses must be escaped
-        esc = line.replace("(", "\\(").replace(")", "\\)")
+    # 4) Build text stream
+    text = "BT\n/F1 12 Tf\n72 750 Td\n"
+    for ln in lines:
+        esc = ln.replace("(", "\\(").replace(")", "\\)")
         text += f"({esc}) Tj\n0 -14 Td\n"
     text += "ET\n"
-    data_stream = text.encode("latin1")
+    data = text.encode("latin1")
 
-    # obj 3: Page definition
+    # 5) Page object
     offsets.append(buf.tell())
     w(b"3 0 obj\n")
     w(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ")
     w(b"/Contents 4 0 R /Resources << /Font << /F1 5 0 R>> >> >>\n")
     w(b"endobj\n")
 
-    # obj 4: Content stream
+    # 6) Content stream
     offsets.append(buf.tell())
-    w(f"4 0 obj\n<< /Length {len(data_stream)} >>\nstream\n".encode("latin1"))
-    w(data_stream)
+    w(f"4 0 obj\n<< /Length {len(data)} >>\nstream\n".encode("latin1"))
+    w(data)
     w(b"\nendstream\nendobj\n")
 
-    # obj 5: Font
+    # 7) Font
     offsets.append(buf.tell())
     w(b"5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n")
 
-    # 3) Cross-reference table
+    # 8) xref
     xref_pos = buf.tell()
     w(b"xref\n0 6\n0000000000 65535 f \n")
     for off in offsets:
         w(f"{off:010d} 00000 n \n".encode("latin1"))
 
-    # 4) Trailer
-    w(b"trailer\n<< /Size 6 /Root 1 0 R >>\n")
-    w(b"startxref\n")
+    # 9) Trailer
+    w(b"trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n")
     w(str(xref_pos).encode("latin1"))
     w(b"\n%%EOF")
 
@@ -1084,51 +1092,48 @@ def build_pdf_bytes(student, grades_qs):
 
 def save_pdf(pdf_bytes, student_id):
     """
-    Saves the PDF into MEDIA_ROOT/reports/ and returns its public URL.
+    Writes PDF under MEDIA_ROOT/reports/ and returns its URL.
     """
     reports_dir = Path(settings.MEDIA_ROOT) / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
+
     fname = f"reportcard_{student_id}_{date.today():%Y-%m-%d}.pdf"
     path  = reports_dir / fname
     path.write_bytes(pdf_bytes)
-    return settings.MEDIA_URL.rstrip("/") + "/reports/" + fname
+
+    return settings.MEDIA_URL.rstrip("/") + f"/reports/{fname}"
 
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def reportcard_view(request, student_id=None):
+@require_http_methods(["POST"])
+def reportcard_generate(request):
     """
-    GET  /api/reportcard/<student_id>/ → streams PDF
-    POST /api/reportcard            → { "student_id": 123 }
-                                         ↪ { "pdf_url": "/media/reports/..." }
+    POST /api/reportcard/   { "student_id": 321 }
+    → 201 { "pdf_url": "/media/reports/reportcard_321_2025-04-19.pdf" }
     """
-    # determine student_id
-    if request.method == "GET":
-        if student_id is None:
-            return JsonResponse({"error": "student_id missing in URL"}, status=400)
-    else:
-        try:
-            payload    = json.loads(request.body or "{}")
-            student_id = int(payload["student_id"])
-        except Exception:
-            return JsonResponse({"error": "student_id (int) required"}, status=400)
-
-    # fetch student
     try:
-        student   = Student.objects.get(pk=student_id)
-    except Student.DoesNotExist:
-        return JsonResponse({"error": "student not found"}, status=404)
+        payload    = json.loads(request.body or "{}")
+        student_id = int(payload["student_id"])
+    except Exception:
+        return JsonResponse({"error": "student_id (int) required"}, status=400)
 
-    # fetch grades
+    student   = get_object_or_404(Student, pk=student_id)
     grades_qs = get_student_grades(student)
 
-    # build and save PDF
     pdf_bytes = build_pdf_bytes(student, grades_qs)
-    public_url = save_pdf(pdf_bytes, student_id)
+    url       = save_pdf(pdf_bytes, student_id)
+    return JsonResponse({"pdf_url": url}, status=201)
 
-    if request.method == "GET":
-        resp = HttpResponse(pdf_bytes, content_type="application/pdf")
-        resp["Content-Disposition"] = f'inline; filename="reportcard_{student_id}.pdf"'
-        return resp
 
-    return JsonResponse({"pdf_url": public_url}, status=201)
+@require_http_methods(["GET"])
+def reportcard_view(request, student_id):
+    """
+    GET /api/reportcard/<student_id>/  → inline PDF
+    """
+    student   = get_object_or_404(Student, pk=student_id)
+    grades_qs = get_student_grades(student)
+
+    pdf_bytes = build_pdf_bytes(student, grades_qs)
+    resp = HttpResponse(pdf_bytes, content_type="application/pdf")
+    resp["Content-Disposition"] = f'inline; filename="reportcard_{student_id}.pdf"'
+    return resp
