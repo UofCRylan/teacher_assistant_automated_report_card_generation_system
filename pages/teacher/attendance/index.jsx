@@ -8,11 +8,11 @@ const TeacherAttendancePage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await scheduleHandler.getSchedule();
+      const result = await scheduleHandler.getUserSchedule();
 
       if (result.status === 200) {
         console.log("Classes got:", result.data);
-        setClasses(result.data);
+        setClasses(result.data.classes);
       }
     };
 

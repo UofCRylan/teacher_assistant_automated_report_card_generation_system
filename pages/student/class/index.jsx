@@ -21,10 +21,9 @@ const StudentClasses = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await scheduleHandler.getSchedule();
-      setClasses(data.data);
-
+      const data = await scheduleHandler.getUserSchedule();
       console.log(data);
+      setClasses(data.data.classes);
     };
 
     fetchData();

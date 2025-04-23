@@ -9,8 +9,8 @@ import {
   RiGraduationCapLine,
   RiGroupFill,
   RiGroupLine,
-  RiHome5Fill,
-  RiHome5Line,
+  // RiHome5Fill,
+  // RiHome5Line,
   RiTimeFill,
   RiTimeLine,
 } from "@remixicon/react";
@@ -19,15 +19,15 @@ const TabManager = {
   users: {
     a: {
       tabs: [
-        {
-          label: "Home",
-          icon: RiHome5Line,
-          href: "/admin",
-          root: true,
-          active: {
-            icon: RiHome5Fill,
-          },
-        },
+        // {
+        //   label: "Home",
+        //   icon: RiHome5Line,
+        //   href: "/admin",
+        //   root: true,
+        //   active: {
+        //     icon: RiHome5Fill,
+        //   },
+        // },
         {
           label: "Manage Class",
           icon: RiBookShelfLine,
@@ -59,15 +59,15 @@ const TabManager = {
     },
     t: {
       tabs: [
-        {
-          label: "Home",
-          icon: RiHome5Line,
-          href: "/teacher",
-          root: true,
-          active: {
-            icon: RiHome5Fill,
-          },
-        },
+        // {
+        //   label: "Home",
+        //   icon: RiHome5Line,
+        //   href: "/teacher",
+        //   root: true,
+        //   active: {
+        //     icon: RiHome5Fill,
+        //   },
+        // },
         {
           label: "Schedule",
           icon: RiCalendar2Line,
@@ -117,15 +117,15 @@ const TabManager = {
     },
     s: {
       tabs: [
-        {
-          label: "Home",
-          icon: RiHome5Line,
-          href: "/student",
-          root: true,
-          active: {
-            icon: RiHome5Fill,
-          },
-        },
+        // {
+        //   label: "Home",
+        //   icon: RiHome5Line,
+        //   href: "/student",
+        //   root: true,
+        //   active: {
+        //     icon: RiHome5Fill,
+        //   },
+        // },
         {
           label: "Schedule",
           icon: RiCalendar2Line,
