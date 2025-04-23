@@ -25,6 +25,8 @@ const StudentClassPage = () => {
   const [classList, setClassList] = useState([]);
   const [grade, setGrade] = useState(undefined);
   const [feedback, setFeedback] = useState(undefined);
+  const [user, setUser] = useState(undefined);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!router.isReady) {
@@ -32,7 +34,6 @@ const StudentClassPage = () => {
     }
 
     const { classID, section } = router.query;
-    console.log("section_id: ", section);
 
     if (section) {
       const fetchData = async () => {
@@ -76,9 +77,10 @@ const StudentClassPage = () => {
 
       fetchData();
       fetchClassListData();
+
       const fetchGrade = async () => {
         const user = await accountManager.getUserInfo();
-        console.log("User: ", user);
+        setUser(user.data);
 
         const result = await gradeHandler.getGrade(
           classID,
@@ -87,8 +89,8 @@ const StudentClassPage = () => {
         );
 
         if (result.status === 200) {
+          console.log("Grade: ", result);
           setGrade(result.data);
-          console.log("Grade: ", grade);
         }
       };
 
@@ -111,6 +113,7 @@ const StudentClassPage = () => {
       // fetchClassListData();
       fetchGrade();
       fetchFeedback();
+      setLoading(false);
     }
   }, [router.isReady]);
 
@@ -198,11 +201,13 @@ const StudentClassPage = () => {
               {view === "Grades & Feedback" && (
                 <>
                   <h2>Grades & Feedback</h2>
-                  {(grade !== undefined) & (feedback !== undefined) ? (
+                  {grade !== undefined &&
+                  feedback !== undefined &&
+                  user !== undefined ? (
                     <StudentGradeCard
-                      studentName={grade.student.data.full_name}
+                      studentName={user.full_name}
                       data={{
-                        grade: grade.grade.letter,
+                        grade: grade,
                         feedback: feedback.comment,
                       }}
                     />

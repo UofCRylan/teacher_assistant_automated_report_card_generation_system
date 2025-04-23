@@ -5,6 +5,7 @@ import classHandler from "@/src/utils/Handlers/ClassHandler";
 import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler";
 import styles from "./edit.module.css";
 import { useRouter } from "next/router";
+import { parseISO, format } from "date-fns";
 
 const TeacherEditAttendancePage = () => {
   // Attendance status options
@@ -34,15 +35,12 @@ const TeacherEditAttendancePage = () => {
   // };
 
   // Current date for attendance in YYYY-MM-DD format
-  const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+  const currentDate = format(new Date(), "yyyy-MM-dd"); // YYYY-MM-DD format
+  console.log("Current date: ", currentDate);
 
-  // Format date for display purposes (MM-DD-YYYY)
   const formatDateForDisplay = (dateString) => {
-    const date = new Date(dateString);
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${month}-${day}-${year}`;
+    const date = parseISO(dateString); // Parses correctly into local time
+    return format(date, "MM-dd-yyyy");
   };
 
   // Initialize students and attendance records from the provided data

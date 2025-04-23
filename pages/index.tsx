@@ -18,7 +18,7 @@ const Home = () => {
     console.log(result);
 
     if (result.status === 200) {
-      router.push("/student");
+      router.push(`/${result.data.user_type}`);
     }
 
     if (result?.status !== 200) {

@@ -47,6 +47,26 @@ class ClassHandler {
     }
   );
 
+  getAllClasses = accountManager.requireAuth(async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/class/`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accountManager.userToken}`,
+        },
+      });
+
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
+    }
+  });
+
   getClass = accountManager.requireAuth(
     async (id: number, section_id: number) => {
       try {
@@ -88,6 +108,29 @@ class ClassHandler {
   getAllStudents = accountManager.requireAuth(async () => {
     try {
       const response = await axios.get(`http://127.0.0.1:8000/api/student/`);
+
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
+    }
+  });
+
+  getClassrooms = accountManager.requireAuth(async () => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8000/api/class/rooms`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accountManager.userToken}`,
+          },
+        }
+      );
 
       return {
         status: 200,

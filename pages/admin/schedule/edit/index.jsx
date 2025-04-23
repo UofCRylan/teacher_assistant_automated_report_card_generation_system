@@ -1,84 +1,119 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "@/src/styles/admin/schedule/edit.module.css";
 import Layout from "../../../../src/components/layout/Layout";
 import Link from "next/link";
+import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
 import { RiArrowRightSLine } from "@remixicon/react";
 
 const AdminEditSchedulePage = () => {
-  const classes = [
-    {
-      id: "1-1",
-      name: "Algebra I",
-      subject: "Mathematics",
-      teacher: "Mrs. Johnson",
-      startTime: "08:00 AM",
-      endTime: "09:30 AM",
-    },
-    {
-      id: "2-1",
-      name: "English Literature",
-      subject: "English",
-      teacher: "Mr. Smith",
-      startTime: "09:45 AM",
-      endTime: "11:15 AM",
-    },
-    {
-      id: "3-1",
-      name: "Biology",
-      subject: "Science",
-      teacher: "Dr. Adams",
-      startTime: "11:30 AM",
-      endTime: "1:00 PM",
-    },
-  ];
+  const [schedules, setSchedules] = useState(undefined);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const schedules = [
-    {
-      schedule_id: 101,
-      classes: [classes[0], classes[1]],
-    },
-    {
-      schedule_id: 102,
-      classes: [classes[2]],
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      const rawSchedules = await scheduleHandler.getAllSchedules();
+
+      const transformedSchedules = Object.entries(rawSchedules.data).map(
+        ([scheduleId, classList]) => ({
+          schedule_id: parseInt(scheduleId),
+          classes: classList.map((item) => ({
+            id: `${item.class.class_number}-${item.class.section}`,
+            name: item.class.class_name,
+            subject: item.class.subject,
+            teacher: item.class.teacher.data.full_name,
+            startTime: item.class.time_start,
+            endTime: item.class.time_end,
+          })),
+        })
+      );
+
+      setSchedules(transformedSchedules);
+    };
+
+    fetchData();
+  }, []);
+
+  const openModal = (schedule) => {
+    setSelectedSchedule(schedule);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedSchedule(null);
+  };
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Edit Schedules</h1>
       <div className={styles.scheduleWrapper}>
-        {schedules.map((schedule) => (
-          <Link
-            key={schedule.schedule_id}
-            href={`/admin/schedules/${schedule.schedule_id}`}
-            className={styles.scheduleCard}
-          >
-            <div className={styles.scheduleContent}>
-              <div>
-                <h2 className={styles.scheduleTitle}>
-                  Schedule ID: {schedule.schedule_id}
-                </h2>
-                <div className={styles.classList}>
-                  {schedule.classes.map((classItem) => (
-                    <div key={classItem.id} className={styles.classItem}>
-                      <h3>{classItem.name}</h3>
-                      <p>
-                        Subject: {classItem.subject} | Teacher:{" "}
-                        {classItem.teacher}
-                      </p>
-                      <p>
-                        Time: {classItem.startTime} - {classItem.endTime}
-                      </p>
-                      <p>Class ID: {classItem.id}</p>
+        {schedules !== undefined &&
+          schedules.map((schedule) => (
+            <div key={schedule.schedule_id} className={styles.scheduleCard}>
+              <Link href={`/admin/schedule/edit/${schedule.schedule_id}`}>
+                <div className={styles.scheduleContent}>
+                  <div>
+                    <h2 className={styles.scheduleTitle}>
+                      Schedule ID: {schedule.schedule_id}
+                    </h2>
+                    <div className={styles.classList}>
+                      {schedule.classes.slice(0, 3).map((classItem) => (
+                        <div key={classItem.id} className={styles.classItem}>
+                          <h3>{classItem.name}</h3>
+                          <p>
+                            Subject: {classItem.subject} | Teacher:{" "}
+                            {classItem.teacher}
+                          </p>
+                          <p>
+                            Time: {classItem.startTime} - {classItem.endTime}
+                          </p>
+                        </div>
+                      ))}
+                      {schedule.classes.length > 3 && (
+                        <button
+                          className={styles.showMoreButton}
+                          onClick={() => openModal(schedule)}
+                        >
+                          Show More
+                        </button>
+                      )}
                     </div>
-                  ))}
+                  </div>
+                  <RiArrowRightSLine className={styles.arrowIcon} />
                 </div>
-              </div>
-              <RiArrowRightSLine className={styles.arrowIcon} />
+              </Link>
             </div>
-          </Link>
-        ))}
+          ))}
       </div>
+
+      {/* Modal */}
+      {isModalOpen && selectedSchedule && (
+        <div className={styles.modalOverlay} onClick={closeModal}>
+          <div
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>Schedule ID: {selectedSchedule.schedule_id}</h2>
+            <div className={styles.classList}>
+              {selectedSchedule.classes.map((classItem) => (
+                <div key={classItem.id} className={styles.classItem}>
+                  <h3>{classItem.name}</h3>
+                  <p>
+                    Subject: {classItem.subject} | Teacher: {classItem.teacher}
+                  </p>
+                  <p>
+                    Time: {classItem.startTime} - {classItem.endTime}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <button className={styles.closeButton} onClick={closeModal}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

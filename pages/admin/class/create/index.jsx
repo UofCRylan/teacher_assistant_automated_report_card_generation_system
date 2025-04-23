@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Layout from "../../../../src/components/layout/Layout";
 import "@/src/styles/admin/class.css";
 import Text from "../../../../src/components/ui/Input/Text";
@@ -8,6 +8,7 @@ import { generateTimeOptions } from "@/src/utils/Handlers/TimeHandler.ts";
 import { addMinutes } from "date-fns";
 import VSpace from "../../../../src/components/ui/Space/VSpace";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
+import teacherHandler from "@/src/utils/Handlers/TeacherHandler.ts";
 import { useRouter } from "next/router";
 
 const AdminCreateClassPage = () => {
@@ -17,6 +18,14 @@ const AdminCreateClassPage = () => {
   const [endTime, setEndTime] = useState(undefined);
   const [teacher, setTeacher] = useState(undefined);
   const [classroom, setClassroom] = useState(undefined);
+  const [classId, setClassId] = useState(undefined);
+  const [sectionId, setSectionId] = useState(undefined);
+
+  const [teacherOptions, setTeacherOptions] = useState([]);
+  const [teacherLoading, setTeacherLoading] = useState(false);
+
+  const [classroomOptions, setClassroomOptions] = useState([]);
+  const [classroomLoading, setClassroomLoading] = useState(false);
 
   const router = useRouter();
 
@@ -29,46 +38,91 @@ const AdminCreateClassPage = () => {
     { value: "Music", label: "Music" },
   ];
 
-  const teacherOptions = [
-    { value: 25, label: "John" },
-    { value: 26, label: "Math" },
-    { value: 27, label: "Science" },
-    { value: 28, label: "Social Studies" },
-    { value: 29, label: "Gym" },
-  ];
+  const classIdOptions = Array.from({ length: 50 }, (_, i) => ({
+    value: i + 1,
+    label: `Class ${i + 1}`,
+  }));
 
-  const classroomOptions = [
-    { value: 1, label: "Homeroom" },
-    { value: 2, label: "Math" },
-    { value: 3, label: "Science" },
-    { value: 4, label: "Social Studies" },
-    { value: 5, label: "Gym" },
-    { value: 6, label: "Music" },
-  ]; // TODO: Make route
+  const sectionIdOptions = Array.from({ length: 5 }, (_, i) => ({
+    value: i + 1,
+    label: `Section ${i + 1}`,
+  }));
 
   const beginTimeOptions = generateTimeOptions("08:00");
 
   const endTimeOptions = useMemo(() => {
     if (!beginTime) return [];
     const nextStart = addMinutes(new Date(`1970-01-01T${beginTime.value}`), 15);
-    const formattedNextStart = nextStart.toTimeString().substring(0, 5); // "HH:mm"
+    const formattedNextStart = nextStart.toTimeString().substring(0, 5);
     return generateTimeOptions(formattedNextStart);
   }, [beginTime]);
 
+  const fetchTeachers = async () => {
+    setTeacherLoading(true);
+    try {
+      const result = await teacherHandler.getAllTeachers();
+      console.log("Teacher data: ", result);
+
+      const formatted = result.data.map((teacher) => ({
+        value: teacher.id,
+        label: teacher.full_name,
+      }));
+      setTeacherOptions(formatted);
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+    } finally {
+      setTeacherLoading(false);
+    }
+  };
+
+  const fetchAvailableClassrooms = async (start, end) => {
+    setClassroomLoading(true);
+    try {
+      const result = await classHandler.getClassrooms();
+      console.log("Class room data: ", result);
+
+      const formatted = result.data.map((room) => ({
+        value: room.room_id,
+        label: `${room.building}-${room.room_number} | Capacity: ${room.capacity}`,
+      }));
+      setClassroomOptions(formatted);
+    } catch (err) {
+      console.error("Failed to fetch classrooms", err);
+      setClassroomOptions([]);
+    } finally {
+      setClassroomLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
+
+  useEffect(() => {
+    if (beginTime?.value && endTime?.value) {
+      fetchAvailableClassrooms(beginTime.value, endTime.value);
+    } else {
+      setClassroomOptions([]);
+    }
+  }, [beginTime, endTime]);
+
   const handleCreate = async () => {
-    const result = await classHandler.createClass({
-      class_id: 60,
-      section_id: 60,
+    const payload = {
+      class_id: classId?.value,
+      section_id: sectionId?.value,
       class_name: className,
-      subject: subject.value,
-      time_start: beginTime.value,
-      time_end: endTime.value,
-      teacher_id: teacher.value,
-      room_id: classroom.value,
-    });
+      subject: subject?.value,
+      time_start: beginTime?.value,
+      time_end: endTime?.value,
+      teacher_id: teacher?.value,
+      room_id: classroom?.value,
+    };
+
+    console.log("Sending: ", payload);
+
+    const result = await classHandler.createClass(payload);
 
     if (result?.status === 200) {
-      // TODO:
       router.push("/admin/class");
     }
 
@@ -80,6 +134,29 @@ const AdminCreateClassPage = () => {
       <main>
         <h2>Create Class</h2>
         <div className="info">
+          <div className="container">
+            <div>
+              <label>Class ID</label>
+              <VSpace />
+              <Select
+                name="classId"
+                options={classIdOptions}
+                value={classId}
+                onChange={setClassId}
+              />
+            </div>
+            <div className="end">
+              <label>Section Number</label>
+              <VSpace />
+              <Select
+                name="sectionId"
+                options={sectionIdOptions}
+                value={sectionId}
+                onChange={setSectionId}
+              />
+            </div>
+          </div>
+          <VSpace space={23} />
           <div className="container">
             <div>
               <Text
@@ -95,9 +172,7 @@ const AdminCreateClassPage = () => {
                 name="subject"
                 options={subjectOptions}
                 value={subject}
-                onChange={(selectedOption) => {
-                  setSubject(selectedOption);
-                }}
+                onChange={setSubject}
               />
             </div>
           </div>
@@ -110,9 +185,7 @@ const AdminCreateClassPage = () => {
                 name="beginTime"
                 options={beginTimeOptions}
                 value={beginTime}
-                onChange={(selectedOption) => {
-                  setBeginTime(selectedOption);
-                }}
+                onChange={setBeginTime}
               />
             </div>
             <div className="end">
@@ -121,7 +194,8 @@ const AdminCreateClassPage = () => {
               <Select
                 name="endTime"
                 options={endTimeOptions}
-                onChange={(selectedOption) => setEndTime(selectedOption)}
+                value={endTime}
+                onChange={setEndTime}
                 isDisabled={!beginTime}
               />
             </div>
@@ -134,8 +208,12 @@ const AdminCreateClassPage = () => {
               name="teacher"
               options={teacherOptions}
               value={teacher}
-              onChange={(selectedOption) => setTeacher(selectedOption)}
-              isDisabled={!beginTime || !endTime}
+              onChange={setTeacher}
+              isDisabled={!beginTime || !endTime || teacherLoading}
+              isLoading={teacherLoading}
+              placeholder={
+                teacherLoading ? "Loading teachers..." : "Select teacher"
+              }
             />
           </div>
           <VSpace space={23} />
@@ -146,14 +224,18 @@ const AdminCreateClassPage = () => {
               name="classroom"
               options={classroomOptions}
               value={classroom}
-              onChange={(selectedOption) => setClassroom(selectedOption)}
-              isDisabled={!beginTime || !endTime}
+              onChange={setClassroom}
+              isDisabled={!beginTime || !endTime || classroomLoading}
+              isLoading={classroomLoading}
+              placeholder={
+                classroomLoading ? "Loading classrooms..." : "Select classroom"
+              }
             />
           </div>
         </div>
         <VSpace space={40} />
         <div>
-          <Button label="Create class" onClick={() => handleCreate()} />
+          <Button label="Create class" onClick={handleCreate} />
         </div>
       </main>
     </div>

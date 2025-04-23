@@ -92,8 +92,8 @@ const TeacherEditGradePage = () => {
     }));
 
     try {
-      await gradeHandler.updateGrades(classID, section, payload);
-      alert("Grades saved!");
+      const result = await gradeHandler.updateGrades(classID, section, payload);
+      console.log("Grade status: ", result);
     } catch (err) {
       console.error("Error saving grades:", err);
       alert("Failed to save grades.");

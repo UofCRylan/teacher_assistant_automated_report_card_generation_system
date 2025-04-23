@@ -18,10 +18,13 @@ const StudentGradeCard: React.FC<StudentGradeCardProps> = ({
   const { grade, feedback } = data;
 
   const getGradeClass = (grade: string | null) => {
+    console.log("Got grade: ", grade);
     if (!grade) return `${styles.gradeBox} ${styles.gradeGray}`;
-    if (grade.startsWith("A")) return `${styles.gradeBox} ${styles.gradeGreen}`;
-    if (grade.startsWith("B")) return `${styles.gradeBox} ${styles.gradeBlue}`;
-    if (grade.startsWith("C"))
+    if (grade.grade.letter.startsWith("A"))
+      return `${styles.gradeBox} ${styles.gradeGreen}`;
+    if (grade.grade.letter.startsWith("B"))
+      return `${styles.gradeBox} ${styles.gradeBlue}`;
+    if (grade.grade.letter.startsWith("C"))
       return `${styles.gradeBox} ${styles.gradeYellow}`;
     return `${styles.gradeBox} ${styles.gradeRed}`;
   };
@@ -32,7 +35,7 @@ const StudentGradeCard: React.FC<StudentGradeCardProps> = ({
 
       <div className={getGradeClass(grade)}>
         {grade
-          ? `Your Grade: ${grade}`
+          ? `Your Grade: ${grade.grade.letter}`
           : "📌 Your grade isn't available yet. Check back soon!"}
       </div>
 

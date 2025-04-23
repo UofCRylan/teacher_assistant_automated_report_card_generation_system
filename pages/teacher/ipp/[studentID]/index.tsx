@@ -30,6 +30,8 @@ const TeacherIppDetailPage = () => {
           user.data.id
         );
 
+        console.log("res: ", result.data);
+
         if (result.status === 200) {
           setIpp(result.data);
           setGoals(result.data.goals);

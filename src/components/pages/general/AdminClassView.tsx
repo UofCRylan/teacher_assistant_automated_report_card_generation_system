@@ -3,16 +3,16 @@ import Link from "next/link";
 import styles from "./ClassView.module.css";
 import { RiArrowRightSLine } from "@remixicon/react";
 
-const TeacherClassView = ({ classes, link }) => {
+const AdminClassView = ({ classes, link }) => {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Your Classes</h1>
+        <h1 className={styles.title}>All Classes</h1>
         <div className={styles.classList}>
           {classes.map((classItem) => (
             <Link
               key={`${classItem.class_number} - ${classItem.section}`}
-              href={`/teacher/${link}/${classItem.class_number}?section=${classItem.section}`}
+              href={`/admin/${link}/${classItem.class_number}?section=${classItem.section}`}
               className={styles.classCard}
             >
               <div className={styles.classInfo}>
@@ -51,4 +51,4 @@ const Info = ({ label, value }) => (
   </div>
 );
 
-export default TeacherClassView;
+export default AdminClassView;
