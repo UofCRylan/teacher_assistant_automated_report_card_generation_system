@@ -7,9 +7,11 @@ import Button from "../../../../src/components/ui/Button/Button";
 import { generateTimeOptions } from "@/src/utils/Handlers/TimeHandler.ts";
 import { addMinutes } from "date-fns";
 import VSpace from "../../../../src/components/ui/Space/VSpace";
+import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import teacherHandler from "@/src/utils/Handlers/TeacherHandler.ts";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
 const AdminCreateClassPage = () => {
   const [className, setClassName] = useState("");
@@ -38,15 +40,31 @@ const AdminCreateClassPage = () => {
     { value: "Music", label: "Music" },
   ];
 
-  const classIdOptions = Array.from({ length: 50 }, (_, i) => ({
-    value: i + 1,
-    label: `Class ${i + 1}`,
-  }));
+  const classIdOptions = (function getClassOptions() {
+    let result = [];
 
-  const sectionIdOptions = Array.from({ length: 5 }, (_, i) => ({
-    value: i + 1,
-    label: `Section ${i + 1}`,
-  }));
+    for (let i = 0; i < 50; i++) {
+      result.push({
+        value: i + 1,
+        label: `Class ${i + 1}`,
+      });
+    }
+
+    return result;
+  })();
+
+  const sectionIdOptions = (function getSectionOptions() {
+    let result = [];
+
+    for (let i = 0; i < 5; i++) {
+      result.push({
+        value: i + 1,
+        label: `Section ${i + 1}`,
+      });
+    }
+
+    return result;
+  })();
 
   const beginTimeOptions = generateTimeOptions("08:00");
 
@@ -61,7 +79,11 @@ const AdminCreateClassPage = () => {
     setTeacherLoading(true);
     try {
       const result = await teacherHandler.getAllTeachers();
-      console.log("Teacher data: ", result);
+
+      if (result.error) {
+        toast.error(result.error.response.data);
+        return;
+      }
 
       const formatted = result.data.map((teacher) => ({
         value: teacher.id,
@@ -69,7 +91,8 @@ const AdminCreateClassPage = () => {
       }));
       setTeacherOptions(formatted);
     } catch (error) {
-      console.error("Error fetching teachers:", error);
+      toast.error(error);
+      return;
     } finally {
       setTeacherLoading(false);
     }
@@ -79,12 +102,12 @@ const AdminCreateClassPage = () => {
     setClassroomLoading(true);
     try {
       const result = await classHandler.getClassrooms();
-      console.log("Class room data: ", result);
 
       const formatted = result.data.map((room) => ({
         value: room.room_id,
         label: `${room.building}-${room.room_number} | Capacity: ${room.capacity}`,
       }));
+
       setClassroomOptions(formatted);
     } catch (err) {
       console.error("Failed to fetch classrooms", err);
@@ -118,15 +141,14 @@ const AdminCreateClassPage = () => {
       room_id: classroom?.value,
     };
 
-    console.log("Sending: ", payload);
-
     const result = await classHandler.createClass(payload);
 
     if (result?.status === 200) {
+      toast.success(result.data.message);
       router.push("/admin/class");
+    } else {
+      toast.error(result.error.response.data);
     }
-
-    console.log("Create: ", result);
   };
 
   return (
@@ -237,6 +259,7 @@ const AdminCreateClassPage = () => {
         <div>
           <Button label="Create class" onClick={handleCreate} />
         </div>
+        <MessageAlert />
       </main>
     </div>
   );

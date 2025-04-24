@@ -10,6 +10,7 @@ import {
   getMinutes,
   getHours,
 } from "date-fns";
+import { toast } from "react-toastify";
 
 const TeacherScheduleView = ({ schedule }) => {
   const styling = {
@@ -122,7 +123,7 @@ const TeacherScheduleView = ({ schedule }) => {
           processedSlots.add(currentSlot);
           index += slotCount;
         } catch (error) {
-          console.error("Error with class:", clsItem.class_name, error);
+          toast.error(error);
           elements.push(
             <div
               key={`${day}-error-${index}`}

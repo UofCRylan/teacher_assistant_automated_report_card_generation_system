@@ -8,6 +8,9 @@ import Link from "next/link";
 import Select from "react-select";
 import Modal from "@/src/components/ui/Modal/Modal";
 import Text from "@/src/components/ui/Input/Text";
+import Button from "@/src/components/ui/Button/Button";
+import IconButton from "@/src/components/ui/Button/IconButton.jsx";
+import { RiAddLine } from "@remixicon/react";
 
 const TeacherIppPage = () => {
   const [ipps, setIpps] = useState(undefined);
@@ -64,7 +67,10 @@ const TeacherIppPage = () => {
 
       const user = await accountManager.getUserInfo();
       const updatedIpps = await ippHandler.getTeachersIpp(user.data.id);
-      if (updatedIpps.status === 200) setIpps(updatedIpps.data);
+      if (updatedIpps.status === 200) {
+        setIpps(updatedIpps.data);
+        setShowModal(false);
+      }
     }
   };
 
@@ -79,20 +85,11 @@ const TeacherIppPage = () => {
           }}
         >
           <h1 className={styles.title}>Your Individual Program Plans</h1>
-          <button
+          <IconButton
             onClick={() => setShowModal(true)}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#1565c0",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
-          >
-            + Create IPP
-          </button>
+            icon={<RiAddLine />}
+            text={"Create IPP"}
+          />
         </div>
 
         <div className={styles.grid}>
@@ -170,7 +167,8 @@ const TeacherIppPage = () => {
             />
           </div>
 
-          <button
+          <Button
+            label="Save"
             onClick={handleCreate}
             style={{
               padding: "10px 20px",
@@ -181,9 +179,7 @@ const TeacherIppPage = () => {
               cursor: "pointer",
               fontWeight: "500",
             }}
-          >
-            Save
-          </button>
+          />
         </Modal>
       )}
     </div>

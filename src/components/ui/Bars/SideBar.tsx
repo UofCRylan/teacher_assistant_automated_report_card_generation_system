@@ -6,8 +6,6 @@ const SideBar = ({ options = [], selected, handleChange }) => {
     <div className="side-bar">
       {options &&
         options.map((item, index) => {
-          console.log("An item: ", item);
-          console.log("Selected: ", item);
           return (
             <button
               className={`option ${selected === item ? "selected" : ""}`}

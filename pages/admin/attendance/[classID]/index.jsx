@@ -5,6 +5,7 @@ import classHandler from "@/src/utils/Handlers/ClassHandler";
 import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler";
 import styles from "./edit.module.css";
 import { useRouter } from "next/router";
+import Button from "../../../../src/components/ui/Button/Button";
 
 const AdminEditAttendancePage = () => {
   // Attendance status options
@@ -47,7 +48,6 @@ const AdminEditAttendancePage = () => {
 
   // Initialize students and attendance records from the provided data
   useEffect(() => {
-    console.log("h1");
     if (!router.isReady) {
       return;
     }
@@ -56,11 +56,9 @@ const AdminEditAttendancePage = () => {
 
     const fetchData = async () => {
       const classData = await classHandler.getClass(classID, section);
-      console.log("room: ", classData.data);
       setClassInfo(classData.data);
 
       const studentsInClass = await classHandler.getStudents(classID, section);
-      console.log("Students: ", studentsInClass);
 
       // Set the students in class
       setClassStudents(studentsInClass.data);
@@ -70,7 +68,6 @@ const AdminEditAttendancePage = () => {
         classID,
         section
       );
-      console.log("Records: ", existingAttendanceRecords);
 
       // Create initial attendance records for all students
       const initialAttendanceRecords = studentsInClass.data.map((student) => {
@@ -136,26 +133,20 @@ const AdminEditAttendancePage = () => {
   const handleSave = async () => {
     const { classID, section } = router.query;
 
-    console.log(attendanceRecords);
-
-    // Format the data for the API - keep date as YYYY-MM-DD for API consistency
     const formattedData = attendanceRecords.map((record) => ({
       class_id: record.class.class_number,
       section: record.class.section,
       student_id: record.student.data.id,
       teacher_id: record.class.teacher.data.id,
-      date: record.date, // Keep as YYYY-MM-DD format for API
-      status: record.status, // "present", "absent", "late", or null
+      date: record.date,
+      status: record.status,
     }));
-
-    console.log("Saving attendance records:", formattedData);
 
     const result = await attendanceHandler.updateAttendance(
       classID,
       section,
       formattedData
     );
-    console.log("Saved result: ", result);
   };
 
   return (
@@ -198,9 +189,11 @@ const AdminEditAttendancePage = () => {
             <span>Loading class data...</span>
           )}
         </div>
-        <button className={styles.saveButton} onClick={handleSave}>
-          Save
-        </button>
+        <Button
+          label="Save"
+          className={styles.saveButton}
+          onClick={() => handleSave()}
+        />
       </div>
       <div className={styles.table}>
         {attendanceRecords.length > 0 &&

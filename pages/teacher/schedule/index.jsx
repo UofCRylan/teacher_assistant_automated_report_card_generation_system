@@ -11,8 +11,7 @@ const TeacherSchedulePage = () => {
       const result = await scheduleHandler.getUserSchedule();
 
       if (result.status === 200) {
-        console.log("schedule result: ", result);
-        setSchedule(result.data.classes);
+        setSchedule(result.data);
       }
     };
 

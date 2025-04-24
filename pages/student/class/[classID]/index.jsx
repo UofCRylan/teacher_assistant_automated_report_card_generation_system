@@ -1,5 +1,3 @@
-// "use client";
-
 import React, { useEffect, useState } from "react";
 import SideBar from "@/src/components/ui/Bars/SideBar";
 import SubjectManager from "@/src/utils/SubjectManager";
@@ -7,18 +5,17 @@ import DataTable from "react-data-table-component";
 import StudentGradeCard from "@/src/components/pages/student/classes/StudentGradeCard.tsx";
 import Layout from "../../../../src/components/layout/Layout";
 import { parse, format } from "date-fns";
-// import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/router";
 import classHandler from "@/src/utils/Handlers/ClassHandler";
 import accountManager from "@/src/utils/Managers/AccountManager.js";
 import gradeHandler from "@/src/utils/Handlers/GradeHandler.ts";
 import feedbackHandler from "@/src/utils/Handlers/feedbackHandler.ts";
-
+import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
+import { toast } from "react-toastify";
 import "@/src/styles/student/classes.css";
 
 const StudentClassPage = () => {
   const router = useRouter();
-  // const searchParams = useSearchParams();
 
   const [view, setView] = useState("About");
   const [classInformation, setClassInformation] = useState(undefined);
@@ -39,16 +36,10 @@ const StudentClassPage = () => {
       const fetchData = async () => {
         try {
           const result = await classHandler.getClass(classID, section);
-          console.log("Result: ", result.data);
-
-          if (result.error) {
-            console.error("Error fetching class info:", result.error);
-            return;
-          }
 
           setClassInformation(result.data);
         } catch (error) {
-          console.error("Error fetching class info:", error);
+          toast.error(result.error.response.data);
         }
       };
 
@@ -56,22 +47,15 @@ const StudentClassPage = () => {
         try {
           const result = await classHandler.getStudents(classID, section);
 
-          if (result.error) {
-            console.error("Error fetching class list info:", result.error);
-            return;
-          }
-
           result.data.forEach((element) => {
             element.data["name"] =
               element.data["first_name"] + " " + element.data["last_name"];
             element.data["role"] = "Student";
           });
 
-          console.log("List result: ", result.data);
-
           setClassList(result.data);
         } catch (error) {
-          console.error("Error fetching class info:", error);
+          toast.error(result.error.response.data);
         }
       };
 
@@ -79,38 +63,44 @@ const StudentClassPage = () => {
       fetchClassListData();
 
       const fetchGrade = async () => {
-        const user = await accountManager.getUserInfo();
-        setUser(user.data);
+        try {
+          const user = await accountManager.getUserInfo();
+          setUser(user.data);
 
-        const result = await gradeHandler.getGrade(
-          classID,
-          section,
-          user.data.id
-        );
+          const result = await gradeHandler.getGrade(
+            classID,
+            section,
+            user.data.id
+          );
 
-        if (result.status === 200) {
-          console.log("Grade: ", result);
-          setGrade(result.data);
+          if (result.status === 200) {
+            console.log("Grade: ", result);
+            setGrade(result.data);
+          }
+        } catch (error) {
+          toast.error(error.response.data);
         }
       };
 
       const fetchFeedback = async () => {
-        const user = await accountManager.getUserInfo();
-        console.log("User: ", user);
+        try {
+          const user = await accountManager.getUserInfo();
 
-        const result = await feedbackHandler.getFeedback(
-          classID,
-          section,
-          user.data.id
-        );
+          const result = await feedbackHandler.getFeedback(
+            classID,
+            section,
+            user.data.id
+          );
 
-        if (result.status === 200) {
-          setFeedback(result.data);
+          if (result.status === 200) {
+            setFeedback(result.data);
+          }
+        } catch (error) {
+          toast.error(result.error.response.data);
         }
       };
 
       fetchData();
-      // fetchClassListData();
       fetchGrade();
       fetchFeedback();
       setLoading(false);
@@ -217,6 +207,7 @@ const StudentClassPage = () => {
                 </>
               )}
             </div>
+            <MessageAlert />
           </div>
         </>
       ) : (

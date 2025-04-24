@@ -18,7 +18,6 @@ const StudentGradeCard: React.FC<StudentGradeCardProps> = ({
   const { grade, feedback } = data;
 
   const getGradeClass = (grade: string | null) => {
-    console.log("Got grade: ", grade);
     if (!grade) return `${styles.gradeBox} ${styles.gradeGray}`;
     if (grade.grade.letter.startsWith("A"))
       return `${styles.gradeBox} ${styles.gradeGreen}`;

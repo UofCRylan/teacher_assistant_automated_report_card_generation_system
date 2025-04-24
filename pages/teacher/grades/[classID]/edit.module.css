@@ -23,20 +23,15 @@
 }
 
 .saveButton {
-  background-color: #3498db;
-  color: white;
   padding: 10px 20px;
   border-radius: 8px;
-  border: none;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s;
-  margin-left: 16px;
-  height: fit-content;
-}
-
-.saveButton:hover {
-  background-color: #2980b9;
+  width: 90px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
 }
 
 .table {

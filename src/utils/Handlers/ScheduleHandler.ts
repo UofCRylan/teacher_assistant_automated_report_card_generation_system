@@ -2,7 +2,7 @@ import axios from "axios";
 import accountManager from "../Managers/AccountManager";
 
 class ScheduleHandler {
-  updateSchedule = accountManager.requireAuth(
+  createSchedule = accountManager.requireAuth(
     async (scheduleID: number, data) => {
       try {
         const response = await axios.post(
@@ -15,10 +15,28 @@ class ScheduleHandler {
 
         return response;
       } catch (error) {
-        console.log(error);
         return {
-          message: error.response.data.error,
-          status: error.status,
+          error: error,
+        };
+      }
+    }
+  );
+
+  updateSchedule = accountManager.requireAuth(
+    async (scheduleID: number, data) => {
+      try {
+        const response = await axios.put(
+          `http://127.0.0.1:8000/api/schedule/${scheduleID}`,
+          data,
+          {
+            headers: { Authorization: `Bearer ${accountManager.userToken}` },
+          }
+        );
+
+        return response;
+      } catch (error) {
+        return {
+          error: error,
         };
       }
     }
@@ -32,10 +50,8 @@ class ScheduleHandler {
 
       return response;
     } catch (error) {
-      console.log(error);
       return {
-        message: error.response.data.error,
-        status: error.status,
+        error: error,
       };
     }
   });
@@ -51,10 +67,8 @@ class ScheduleHandler {
 
       return response;
     } catch (error) {
-      console.log(error);
       return {
-        message: error.response.data.error,
-        status: error.status,
+        error: error,
       };
     }
   });
@@ -70,10 +84,8 @@ class ScheduleHandler {
 
       return response;
     } catch (error) {
-      console.log(error);
       return {
-        message: error.response.data.error,
-        status: error.status,
+        error: error,
       };
     }
   });

@@ -10,6 +10,7 @@ import { addMinutes, parse, format } from "date-fns";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import teacherHandler from "@/src/utils/Handlers/TeacherHandler.ts";
 import VSpace from "../../../../../src/components/ui/Space/VSpace";
+import { toast } from "react-toastify";
 
 const AdminEditClassDetailedPage = () => {
   const router = useRouter();
@@ -130,11 +131,12 @@ const AdminEditClassDetailedPage = () => {
       room_id: classroom?.value,
     };
 
-    const result = await classHandler.createClass(payload); // updateClass handler
-    if (result?.status === 200) {
+    try {
+      const result = await classHandler.createClass(payload);
+      toast.success(result.data.message);
       router.push("/admin/class");
-    } else {
-      console.log("Failed to update class", result);
+    } catch (error) {
+      toast.error(error); // TODO
     }
   };
 

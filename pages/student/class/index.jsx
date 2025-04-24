@@ -35,7 +35,6 @@ const StudentClasses = () => {
       <div className="subject-container">
         {classes !== undefined &&
           classes.map((cls, index) => {
-            console.log("A class: ", cls.class);
             return (
               <Link
                 href={`/student/class/${cls.class.class_number}?section=${cls.class.section}`}

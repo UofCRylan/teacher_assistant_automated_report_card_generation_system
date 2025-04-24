@@ -15,7 +15,6 @@ const Home = () => {
 
   const handleLogin = async () => {
     const result = await accountManager.auth(email, password);
-    console.log(result);
 
     if (result.status === 200) {
       router.push(`/${result.data.user_type}`);

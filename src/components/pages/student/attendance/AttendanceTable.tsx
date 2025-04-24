@@ -9,6 +9,7 @@ const AttendanceTable = ({ classes, attendanceRecords, weekOffset }) => {
 
   // Generate array of weekdays for the selected week
   const weekdays = Array.from({ length: 5 }, (_, i) => {
+    // TODO
     return addDays(new Date(currentWeekStart), i);
   });
 
@@ -41,8 +42,6 @@ const AttendanceTable = ({ classes, attendanceRecords, weekOffset }) => {
   // Helper to count total absences and lates for a class
   const countAttendanceType = (classNumber, section, type) => {
     const fullType = type === "A" ? "Absent" : "Late";
-
-    console.log("CN: ", classNumber);
 
     return attendanceRecords.filter(
       (record) =>

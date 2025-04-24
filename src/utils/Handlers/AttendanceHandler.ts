@@ -15,7 +15,7 @@ class AttendanceHandler {
             },
           }
         );
-        console.log("Responded: ", response);
+
         return {
           status: 200,
           data: response.data,
@@ -34,7 +34,7 @@ class AttendanceHandler {
         const response = await axios.get(
           `http://127.0.0.1:8000/api/class/${id}/section/${section_id}/attendance`
         );
-        console.log("Responded: ", response);
+
         return {
           status: 200,
           data: response.data,
@@ -58,7 +58,6 @@ class AttendanceHandler {
           },
         }
       );
-      console.log("Attendance Records: ", response);
       return {
         status: 200,
         data: response.data,

@@ -4,6 +4,7 @@ import Layout from "../../../../src/components/layout/Layout";
 import Link from "next/link";
 import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
 import { RiArrowRightSLine } from "@remixicon/react";
+import Button from "../../../../src/components/ui/Button/Button";
 
 const AdminEditSchedulePage = () => {
   const [schedules, setSchedules] = useState(undefined);
@@ -71,12 +72,11 @@ const AdminEditSchedulePage = () => {
                         </div>
                       ))}
                       {schedule.classes.length > 3 && (
-                        <button
+                        <Button
+                          label="Show More"
                           className={styles.showMoreButton}
                           onClick={() => openModal(schedule)}
-                        >
-                          Show More
-                        </button>
+                        />
                       )}
                     </div>
                   </div>

@@ -11,7 +11,6 @@ const AdminAttendancePage = () => {
       const result = await classHandler.getAllClasses();
 
       if (result.status === 200) {
-        console.log("Classes got:", result.data);
         setClasses(result.data);
       }
     };

@@ -1,5 +1,5 @@
-// components/TeacherEditGradePage.jsx
 import React, { useEffect, useState } from "react";
+import { ToastContainer, toast, Bounce } from "react-toastify";
 import Select from "react-select";
 import { useRouter } from "next/router";
 import { RiSave3Fill } from "@remixicon/react";
@@ -8,6 +8,7 @@ import styles from "./edit.module.css";
 
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import gradeHandler from "@/src/utils/Handlers/GradeHandler.ts";
+import Button from "../../../../src/components/ui/Button/Button";
 
 const gradeOptions = [
   { value: "A+", label: "A+" },
@@ -65,7 +66,7 @@ const TeacherEditGradePage = () => {
 
         setGrades(merged);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        toast.error("Error fetching data:" + error);
       } finally {
         setLoading(false);
       }
@@ -93,10 +94,9 @@ const TeacherEditGradePage = () => {
 
     try {
       const result = await gradeHandler.updateGrades(classID, section, payload);
-      console.log("Grade status: ", result);
-    } catch (err) {
-      console.error("Error saving grades:", err);
-      alert("Failed to save grades.");
+      toast.success(result.data);
+    } catch (error) {
+      toast.error(result.error.response.data);
     }
   };
 
@@ -160,11 +160,12 @@ const TeacherEditGradePage = () => {
             <span>Loading class data...</span>
           )}
         </div>
-
-        <button className={styles.saveButton} onClick={handleSave}>
-          <RiSave3Fill size={20} />
-          Save
-        </button>
+        <Button
+          label="Save"
+          className={styles.saveButton}
+          widt
+          onClick={() => handleSave()}
+        />
       </div>
 
       <div className={styles.table}>
@@ -193,6 +194,18 @@ const TeacherEditGradePage = () => {
           </div>
         ))}
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
     </div>
   );
 };

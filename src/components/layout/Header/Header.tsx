@@ -46,7 +46,6 @@ function Header() {
   }, []);
 
   const handleManageClick = () => {
-    console.log("CLICKED");
     setShowManageContainer((prevState) => !prevState);
   };
 

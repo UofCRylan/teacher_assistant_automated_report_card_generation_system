@@ -6,6 +6,7 @@ import Layout from "@/src/components/layout/Layout";
 import { useRouter } from "next/router";
 import Modal from "@/src/components/ui/Modal/Modal";
 import Text from "@/src/components/ui/Input/Text.tsx";
+import Button from "@/src/components/ui/Button/Button";
 
 const TeacherIppDetailPage = () => {
   const router = useRouter();
@@ -29,8 +30,6 @@ const TeacherIppDetailPage = () => {
           studentID,
           user.data.id
         );
-
-        console.log("res: ", result.data);
 
         if (result.status === 200) {
           setIpp(result.data);
@@ -75,20 +74,7 @@ const TeacherIppDetailPage = () => {
               }}
             >
               <h1 className={styles.title}>Individual Program Plan</h1>
-              <button
-                onClick={() => setShowModal(true)}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#1565c0",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
-              >
-                Edit IPP
-              </button>
+              <Button onClick={() => setShowModal(true)} label="Edit IPP" />
             </div>
 
             <div className={styles.section}>
@@ -160,21 +146,7 @@ const TeacherIppDetailPage = () => {
                 handleChange={setSD}
               />
             </div>
-
-            <button
-              onClick={handleEdit}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#1565c0",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontWeight: "500",
-              }}
-            >
-              Save
-            </button>
+            <Button onClick={() => handleEdit()} label="Save" />
           </Modal>
         </>
       ) : (

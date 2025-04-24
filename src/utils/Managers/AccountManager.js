@@ -4,9 +4,6 @@ import Cookies from "universal-cookie";
 const cookies = new Cookies(null, { path: "/" });
 
 let instance;
-// const config = {
-//   headers: { Authorization: `Bearer ${token}` }
-// };
 
 class AccountManager {
   #user;
@@ -20,7 +17,6 @@ class AccountManager {
     instance = this;
 
     const accessToken = cookies.get("user");
-    console.log(this.#user);
 
     if (accessToken) {
       this.#user = accessToken;
@@ -53,7 +49,6 @@ class AccountManager {
         `http://127.0.0.1:8000/api/auth/`,
         data
       );
-      console.log("Responded: ", response);
 
       const accessToken = response.data.access;
       var date = new Date();
@@ -68,10 +63,8 @@ class AccountManager {
 
       return response;
     } catch (error) {
-      console.log(error);
       return {
-        message: error.response.data.error,
-        status: error.status,
+        error: error,
       };
     }
   }
@@ -91,11 +84,9 @@ class AccountManager {
         const response = await axios.get(`http://127.0.0.1:8000/api/auth/me`, {
           headers: { Authorization: `Bearer ${this.#user}` },
         });
-        console.log("Info Responded: ", response);
 
         return response;
       } catch (error) {
-        console.log(error);
         return {
           message: error.response.data.error,
           status: error.status,
@@ -106,7 +97,6 @@ class AccountManager {
   }
 
   logout = () => {
-    console.log("Logging out....");
     cookies.remove("user");
     this.#user = undefined;
     this.accessToken = undefined;

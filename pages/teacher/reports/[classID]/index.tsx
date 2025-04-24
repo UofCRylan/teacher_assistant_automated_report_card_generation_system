@@ -66,11 +66,11 @@ const TeacherReportsDetailPage = () => {
     fetchData();
   }, [router.isReady]);
 
-  const handleEditClick = (student: Student) => {
-    setSelectedStudent(student);
-    setNewFeedback(student.feedback || "");
-    setShowModal(true);
-  };
+  // const handleEditClick = (student: Student) => {
+  //   setSelectedStudent(student);
+  //   setNewFeedback(student.feedback || "");
+  //   setShowModal(true);
+  // };
 
   const handleSaveFeedback = async () => {
     if (selectedStudent) {
@@ -88,15 +88,12 @@ const TeacherReportsDetailPage = () => {
         feedback: newFeedback,
       };
 
-      console.log("Payload to send:", payload);
       const result = await feedbackHandler.updateFeedback(
         classID,
         section,
         selectedStudent.id,
         payload
       );
-      console.log("Feedback returned: ", result);
-      // TODO: Send to API here
 
       setShowModal(false);
     }
@@ -107,8 +104,8 @@ const TeacherReportsDetailPage = () => {
       <h1 className={styles.header}>Create Report Cards</h1>
 
       <div className={styles.actions}>
-        <button className={styles.button}>Generate Feedback</button>
-        <button className={styles.button}>Generate Report Card</button>
+        {/* <button className={styles.button}>Generate Feedback</button> */}
+        {/* <button className={styles.button}>Generate Report Card</button> */}
       </div>
 
       <div className={styles.studentList}>
@@ -134,18 +131,17 @@ const TeacherReportsDetailPage = () => {
                   )}
                 </p>
               </div>
-              <button
+              {/* <button
                 className={styles.editIcon}
                 onClick={() => handleEditClick(student)}
                 title="Edit Feedback"
               >
                 <RiPencilLine size={20} />
-              </button>
+              </button> */}
             </div>
           ))}
       </div>
-
-      <Modal
+      {/* <Modal
         show={showModal}
         width="400px"
         height="300px"
@@ -162,7 +158,7 @@ const TeacherReportsDetailPage = () => {
         <button className={styles.saveButton} onClick={handleSaveFeedback}>
           Save
         </button>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };

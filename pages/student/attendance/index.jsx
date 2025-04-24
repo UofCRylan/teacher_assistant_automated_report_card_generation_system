@@ -21,9 +21,6 @@ const StudentAttendancePage = () => {
         const attendanceResponse =
           await attendanceHandler.getAttendanceRecords();
 
-        console.log("1: ", classesResponse);
-        console.log("2: ", attendanceResponse);
-
         setClasses(classesResponse.data.classes);
         setAttendanceRecords(attendanceResponse.data);
       } catch (error) {

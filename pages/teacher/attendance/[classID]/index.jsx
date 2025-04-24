@@ -6,9 +6,10 @@ import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler";
 import styles from "./edit.module.css";
 import { useRouter } from "next/router";
 import { parseISO, format } from "date-fns";
+import { ToastContainer, toast, Bounce } from "react-toastify";
+import Button from "../../../../src/components/ui/Button/Button";
 
 const TeacherEditAttendancePage = () => {
-  // Attendance status options
   const attendanceOptions = [
     { value: "Present", label: "Present" },
     { value: "Absent", label: "Absent" },
@@ -16,34 +17,17 @@ const TeacherEditAttendancePage = () => {
   ];
   const router = useRouter();
 
-  // State for students in class and attendance records
   const [classStudents, setClassStudents] = useState([]);
   const [classInfo, setClassInfo] = useState(undefined);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
 
-  // Class information from the sample data
-  // const classInfo = {
-  //   class_number: 1,
-  //   section: 1,
-  //   subject: "Homeroom",
-  //   time_start: "08:00",
-  //   time_end: "08:15",
-  //   class_name: "Grade 1A Homeroom",
-  //   room_number: "101",
-  //   building: "A",
-  //   teacher_name: "Ethan Anderson",
-  // };
-
-  // Current date for attendance in YYYY-MM-DD format
-  const currentDate = format(new Date(), "yyyy-MM-dd"); // YYYY-MM-DD format
-  console.log("Current date: ", currentDate);
+  const currentDate = format(new Date(), "yyyy-MM-dd");
 
   const formatDateForDisplay = (dateString) => {
-    const date = parseISO(dateString); // Parses correctly into local time
+    const date = parseISO(dateString);
     return format(date, "MM-dd-yyyy");
   };
 
-  // Initialize students and attendance records from the provided data
   useEffect(() => {
     if (!router.isReady) {
       return;
@@ -53,21 +37,16 @@ const TeacherEditAttendancePage = () => {
 
     const fetchData = async () => {
       const classData = await classHandler.getClass(classID, section);
-      console.log("room: ", classData.data);
       setClassInfo(classData.data);
 
       const studentsInClass = await classHandler.getStudents(classID, section);
-      console.log("Students: ", studentsInClass);
 
-      // Set the students in class
       setClassStudents(studentsInClass.data);
 
-      // Get existing attendance records
       const existingAttendanceRecords = await attendanceHandler.getAttendance(
         classID,
         section
       );
-      console.log("Records: ", existingAttendanceRecords);
 
       // Create initial attendance records for all students
       const initialAttendanceRecords = studentsInClass.data.map((student) => {
@@ -107,8 +86,8 @@ const TeacherEditAttendancePage = () => {
               },
             },
             student: student,
-            date: currentDate, // Use YYYY-MM-DD format consistently
-            status: null, // Default to null/blank for students without records
+            date: currentDate,
+            status: null,
           };
         }
       });
@@ -120,7 +99,6 @@ const TeacherEditAttendancePage = () => {
   }, [router.isReady]);
 
   const handleAttendanceChange = (studentId, selectedOption) => {
-    // Update the attendance records
     const updatedRecords = attendanceRecords.map((record) =>
       record.student.data.id === studentId
         ? { ...record, status: selectedOption?.value || null }
@@ -133,26 +111,26 @@ const TeacherEditAttendancePage = () => {
   const handleSave = async () => {
     const { classID, section } = router.query;
 
-    console.log(attendanceRecords);
-
-    // Format the data for the API - keep date as YYYY-MM-DD for API consistency
     const formattedData = attendanceRecords.map((record) => ({
       class_id: record.class.class_number,
       section: record.class.section,
       student_id: record.student.data.id,
       teacher_id: record.class.teacher.data.id,
-      date: record.date, // Keep as YYYY-MM-DD format for API
-      status: record.status, // "present", "absent", "late", or null
+      date: record.date,
+      status: record.status,
     }));
-
-    console.log("Saving attendance records:", formattedData);
 
     const result = await attendanceHandler.updateAttendance(
       classID,
       section,
       formattedData
     );
-    console.log("Saved result: ", result);
+
+    if (result.status === 200) {
+      toast.success(result.data);
+    } else {
+      toast.error(result.error.response.data);
+    }
   };
 
   return (
@@ -198,9 +176,11 @@ const TeacherEditAttendancePage = () => {
             <span>Loading class data...</span>
           )}
         </div>
-        <button className={styles.saveButton} onClick={handleSave}>
-          Save
-        </button>
+        <Button
+          label="Save"
+          className={styles.saveButton}
+          onClick={() => handleSave()}
+        />
       </div>
       <div className={styles.table}>
         {attendanceRecords.length > 0 &&
@@ -230,6 +210,18 @@ const TeacherEditAttendancePage = () => {
               </div>
             );
           })}
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          pauseOnHover
+          theme="light"
+          transition={Bounce}
+        />
       </div>
     </div>
   );

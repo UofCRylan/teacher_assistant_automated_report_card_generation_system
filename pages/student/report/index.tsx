@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Layout from "@/src/components/layout/Layout.js";
 import styles from "@/src/styles/student/report/index.module.css";
 import reportHandler from "@/src/utils/Handlers/ReportHandler";
+import { toast } from "react-toastify";
+import Button from "@/src/components/ui/Button/Button";
 
 type ClassStatus = {
   id: number;
@@ -18,17 +20,25 @@ const StudentReportPage = () => {
       if (result.status === 200) {
         setClasses(result.data);
       }
-
-      console.log("Report: ", result);
     };
 
     fetchData();
   }, []);
 
+  const handleDownload = async () => {
+    const result = await reportHandler.getReportCard();
+    if (result.error) {
+      toast.error(result.error);
+    }
+  };
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>📘 Your Report Card Status</h1>
-
+      <h1 className={styles.title}>Your Report Card Status</h1>
+      <small>
+        In order to download your report card all your grades and feedback must
+        be submitted
+      </small>
       <div className={styles.classList}>
         {classes !== undefined &&
           classes.class_records.map((cls, index) => {
@@ -70,13 +80,17 @@ const StudentReportPage = () => {
       <div className={styles.reportSection}>
         {classes !== undefined && classes.status ? (
           <>
-            <p className={styles.readyText}>🎉 All your classes are ready!</p>
-            <button className={styles.downloadBtn}>Download Report Card</button>
+            <p className={styles.readyText}>All your classes are ready!</p>
+            <Button
+              label="Download Report Card"
+              className={styles.downloadBtn}
+              onClick={() => handleDownload()}
+            />
           </>
         ) : (
           <p className={styles.waitingText}>
-            📌 Some classes aren’t ready yet. Once all grades and feedback are
-            in, you’ll be able to download your report card!
+            Some classes aren’t ready yet. Once all grades and feedback are in,
+            you’ll be able to download your report card!
           </p>
         )}
       </div>

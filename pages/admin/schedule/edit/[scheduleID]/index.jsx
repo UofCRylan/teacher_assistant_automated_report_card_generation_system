@@ -7,6 +7,13 @@ import ScheduleView from "@/src/components/pages/general/ScheduleView.tsx";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
 import Layout from "@/src/components/layout/Layout";
+import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
+import { toast } from "react-toastify";
+import Text from "@/src/components/ui/Input/Text.tsx";
+import IconButton from "../../../../../src/components/ui/Button/IconButton";
+import { RiAddLargeLine, RiDeleteBinLine } from "@remixicon/react";
+import VSpace from "../../../../../src/components/ui/Space/VSpace";
+import styles from "@/src/styles/admin/schedule/edit.module.css";
 
 const AdminEditDetailSchedulePage = () => {
   const router = useRouter();
@@ -26,6 +33,12 @@ const AdminEditDetailSchedulePage = () => {
     { value: 4, label: "Grade 4" },
     { value: 5, label: "Grade 5" },
     { value: 6, label: "Grade 6" },
+    { value: 7, label: "Grade 7" },
+    { value: 8, label: "Grade 8" },
+    { value: 9, label: "Grade 9" },
+    { value: 10, label: "Grade 10" },
+    { value: 11, label: "Grade 11" },
+    { value: 12, label: "Grade 12" },
   ];
 
   useEffect(() => {
@@ -71,7 +84,35 @@ const AdminEditDetailSchedulePage = () => {
     }));
 
   const handleAddClass = () => {
-    const cls = allClasses.find((c) => c.class_number === selectedClassId);
+    console.log("all: ", allClasses);
+    console.log("selected: ", selectedClassId);
+    const cls = allClasses.find(
+      (c) =>
+        c.class_number === selectedClassId.classID &&
+        c.section === selectedClassId.section
+    );
+
+    console.log("Cls: ", cls);
+
+    let hasOverlap = false;
+    selectedClasses.forEach((element) => {
+      if (
+        overlap(
+          cls.time_start,
+          cls.time_end,
+          element.time_start,
+          element.time_end
+        )
+      ) {
+        toast.error("Class overlaps with another class currently in schedule");
+        hasOverlap = true;
+      }
+    });
+
+    if (hasOverlap) {
+      return;
+    }
+
     if (cls && selectedClasses.length < 8) {
       const newClass = {
         class_id: cls.class_number,
@@ -86,9 +127,11 @@ const AdminEditDetailSchedulePage = () => {
     setSelectedClassId(null);
   };
 
-  const handleRemoveClass = (classId) => {
+  const handleRemoveClass = (classId, section) => {
     setSelectedClasses(
-      selectedClasses.filter((cls) => cls.class_id !== classId)
+      selectedClasses.filter(
+        (cls) => cls.class_id !== classId && cls.section !== section
+      )
     );
   };
 
@@ -109,71 +152,76 @@ const AdminEditDetailSchedulePage = () => {
 
     const result = await scheduleHandler.updateSchedule(scheduleId, data);
 
-    console.log("Creation: ", result);
+    if (result.error) {
+      toast.error(result.error.response.data);
+      return;
+    }
 
-    console.log("Payload to send to API:", payload);
-    // axios.put(`/api/schedules/${scheduleId}`, { schedule: payload });
+    toast.success(result.data.message);
+  };
+
+  const overlap = (time1_start, time1_end, time2_start, time2_end) => {
+    return time1_start < time2_end && time1_end > time2_start;
   };
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h2>Edit Schedule #{scheduleId}</h2>
-
-      <div style={{ marginBottom: "1rem", maxWidth: "300px" }}>
-        <label style={{ marginBottom: "0.5rem", display: "block" }}>
-          Schedule ID
-        </label>
-        <input
-          type="text"
-          value={scheduleId || ""}
-          disabled
-          style={{
-            padding: "0.5rem",
-            width: "100%",
-            backgroundColor: "#f1f1f1",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-          }}
-        />
+      <div style={{ display: "flex" }}>
+        <div>
+          <h2>Edit Schedule #{scheduleId}</h2>
+          <div style={{ marginBottom: "1rem", maxWidth: "300px" }}>
+            <label style={{ marginBottom: "0.5rem", display: "block" }}>
+              Schedule ID
+            </label>
+            <Text value={scheduleId || ""} disabled />
+          </div>
+          <div style={{ marginBottom: "1rem", maxWidth: "300px" }}>
+            <label style={{ marginBottom: "0.5rem", display: "block" }}>
+              Select a grade level
+            </label>
+            {grade !== undefined && (
+              <Select
+                options={gradeOptions}
+                value={grade}
+                onChange={(opt) => setGrade(opt)}
+                instanceId="select-grade-level"
+              />
+            )}
+          </div>
+        </div>
+        <div style={{ marginLeft: "auto" }}>
+          <div style={{ marginBottom: "1rem" }}>
+            <IconButton
+              icon={<RiAddLargeLine />}
+              text="Add Class"
+              handleClick={() => setShowModal(true)}
+              disabled={selectedClasses.length >= 8}
+              width={200}
+            />
+          </div>
+        </div>
       </div>
-      <div style={{ marginBottom: "1rem", maxWidth: "300px" }}>
-        <label style={{ marginBottom: "0.5rem", display: "block" }}>
-          Select a grade level
-        </label>
-        {grade !== undefined && (
-          <Select
-            options={gradeOptions}
-            value={grade}
-            onChange={(opt) => setGrade(opt)}
-            instanceId="select-grade-level"
-          />
-        )}
-      </div>
-
-      <Button
-        label="Add Class"
-        onClick={() => setShowModal(true)}
-        disabled={selectedClasses.length >= 8}
-      />
 
       <div style={{ marginTop: "2rem" }}>
         <h3>Schedule Preview</h3>
         <ScheduleView schedule={selectedClasses} />
-
-        {selectedClasses.length > 0 && (
-          <ul style={{ marginTop: "1rem" }}>
-            {selectedClasses.map((cls) => (
-              <li key={cls.class_id} style={{ marginBottom: "0.5rem" }}>
-                {cls.class.class_name} - {cls.time_start} to {cls.time_end}
-                <Button
-                  label="Remove"
-                  onClick={() => handleRemoveClass(cls.class_id)}
-                  style={{ marginLeft: "1rem", fontSize: "0.8rem" }}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
+        <VSpace space={25} />
+        {selectedClasses.length > 0 &&
+          selectedClasses.map((cls, index) => (
+            <div
+              key={index}
+              style={{ marginBottom: "0.5rem" }}
+              className={styles.classContainer}
+            >
+              {cls.class.class_name} - {cls.time_start} to {cls.time_end}
+              <button
+                onClick={() => handleRemoveClass(cls.class_id, cls.section)}
+                className={styles.classIcon}
+              >
+                <RiDeleteBinLine className={styles.lineIcon} />
+              </button>
+            </div>
+          ))}
       </div>
 
       <div style={{ marginTop: "2rem" }}>
@@ -183,19 +231,17 @@ const AdminEditDetailSchedulePage = () => {
           disabled={selectedClasses.length === 0}
         />
       </div>
-
-      {/* Modal */}
       <Modal
         show={showModal}
         handleClose={() => setShowModal(false)}
-        width="400px"
+        width={650}
+        height={650}
       >
-        <h3>Select Class</h3>
+        <h2>Select a class</h2>
         <Select
           options={availableClassOptions}
           onChange={(opt) => setSelectedClassId(opt.value)}
           placeholder="Choose a class..."
-          instanceId="select-class-modal"
         />
         <div style={{ marginTop: "1rem" }}>
           <Button
@@ -205,6 +251,7 @@ const AdminEditDetailSchedulePage = () => {
           />
         </div>
       </Modal>
+      <MessageAlert />
     </div>
   );
 };

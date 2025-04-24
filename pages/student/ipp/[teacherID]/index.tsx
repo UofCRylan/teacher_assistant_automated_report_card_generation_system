@@ -25,7 +25,6 @@ const StudentIppDetailPage = () => {
         );
 
         if (result.status === 200) {
-          console.log("result: ", result);
           setIpp(result.data);
         }
       }
