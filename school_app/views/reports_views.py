@@ -3,34 +3,33 @@ import json
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from django.http import HttpResponse
 from ..authentication import require_authorization
 from ..utils import report
 from school_app.models import Student
+from pathlib import Path
+from django.conf import settings
+from django.http import FileResponse
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @require_authorization(['student'])
 def default(request, user_type):
     """
-    GET  /api/reportcard/<student_id>/ → streams PDF
-    POST /api/reportcard            → { "student_id": 123 }
-                                         ↪ { "pdf_url": "/media/reports/..." }
+    GET /api/report/ → streams the generated PDF
     """
     # fetch grades
     student = Student.objects.get(student_id=request.user.id)
     grades_qs = report.get_student_grades(student)
 
-    # build and save PDF
-    pdf_bytes = report.build_pdf_bytes(student, grades_qs)
-    public_url = report.save_pdf(pdf_bytes, request.user.id)
+    # generate and save the styled PDF, get URL
+    public_url = report.generate_report_card(student, grades_qs)
 
-    if request.method == "GET":
-        resp = HttpResponse(pdf_bytes, content_type="application/pdf")
-        resp["Content-Disposition"] = f'inline; filename="reportcard_{request.user.id}.pdf"'
-        return resp
+    # convert the public media URL into an absolute file path
+    relative_path = public_url.replace(settings.MEDIA_URL, "").lstrip("/")
+    file_path = Path(settings.MEDIA_ROOT) / relative_path
 
-    return Response({"pdf_url": public_url}, status=201)
+    # return it as a streamed PDF file
+    return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

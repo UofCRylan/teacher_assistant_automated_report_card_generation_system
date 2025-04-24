@@ -1,13 +1,5 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
-from datetime import timezone
-
 from django.db import models
+from django.db import connection
 
 
 class Address(models.Model):
@@ -241,7 +233,6 @@ class Feedback(models.Model):
     class_no  = models.IntegerField(db_column='classnumber')
     section   = models.IntegerField(db_column='section', help_text="Report‑card term / semester",)
     letter    = models.ForeignKey('FinalGrade',to_field='letter',on_delete=models.DO_NOTHING,db_column='letter',)
-    comment   = models.TextField()
 
     class Meta:
         db_table = 'feedback'
@@ -254,18 +245,31 @@ class Feedback(models.Model):
     def to_dict(self):
         from school_app.models import Class
 
-        try:
-            class_obj = Class.objects.get(class_number=self.class_no, section=self.section)
-            class_dict = class_obj.to_dict()
-        except Class.DoesNotExist:
-            class_dict = None
+        # try:
+        class_obj = Class.objects.get(class_number=self.class_no, section=self.section)
+        class_dict = class_obj.to_dict()
+        # except Class.DoesNotExist:
+        #     class_dict = None
+
+        print(self.class_no, class_obj.subject)
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT ft.comment_template AS template
+                FROM feedback_template ft
+                WHERE ft.class_number = %s
+                AND ft.subject = %s
+                AND ft.letter = %s
+            """, [self.class_no, class_obj.subject, self.letter.letter])
+
+            row = cursor.fetchone()
+            comment = row[0] if row else None
 
         return {
             'grade': self.letter.to_dict(),
             'class': class_dict,
             'student': self.student.to_dict(),
             'teacher': self.teacher.to_dict(),
-            'comment': self.comment
+            'comment': comment
         }
 
     def __str__(self):
@@ -276,15 +280,17 @@ class FeedbackTemplate(models.Model):
     """
     Holds one reusable ‘boiler‑plate’ comment for a given subject & final grade.
     """
-    id        = models.AutoField(primary_key=True)
     letter    = models.ForeignKey('FinalGrade',models.DO_NOTHING,db_column="letter")
+    class_no  = models.IntegerField(db_column='class_number', primary_key=True)
     subject   = models.CharField(max_length=60)          # e.g. “Math 2”
-    template  = models.TextField()                       # e.g. “{student} received …”
+    template  = models.TextField(db_column='comment_template')                       # e.g. “{student} received …”
 
     class Meta:
         db_table = "feedback_template"    # ← must match the physical table
         verbose_name = "Feedback template"
-        verbose_name_plural = "Feedback templates"
+        unique_together = (
+            ('class_no', 'subject', 'letter'),
+        )
 
     def __str__(self):
         return f"{self.subject} – {self.letter_id}"

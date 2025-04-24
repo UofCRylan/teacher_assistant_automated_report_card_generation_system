@@ -26,7 +26,7 @@ def default(request, user_type):
         if class_id and section_id and class_name and subject and time_start and time_end and teacher_id and room_id:
             print("IN")
             result = manager.update_class(class_id, section_id, class_name,
-                                          subject, time_start, time_end, teacher_id, room_id)
+                                          subject, time_start, time_end, teacher_id, room_id, request.method)
             print(result)
 
             return Response(result['message'], status=result['status'])
@@ -108,7 +108,7 @@ def handle_attendance(request, class_id, section_id):
         data = parse_request_data(request)
         result = attendance.update_attendance(class_id, section_id, data)
 
-        return Response(result, status=200)
+        return Response(result['message'], status=result['status'])
 
 @api_view(['GET'])
 def get_attendance(request):

@@ -32,6 +32,6 @@ def get_schedule(request, schedule_id):
         return Response(result, 200)
     else:
         data = parse_request_data(request)
-        result = schedule.update_schedule(schedule_id, data)
+        result = schedule.update_schedule(schedule_id, data, request.method)
 
         return Response(result['message'], result['status'])

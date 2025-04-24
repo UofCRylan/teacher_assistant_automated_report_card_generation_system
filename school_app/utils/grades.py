@@ -79,7 +79,6 @@ def update_grades(records):
     else:
         return {"message": f"Successfully processed {len(results)} grades", "status": 200, "details": results}
 
-
 def get_grade(class_id, section_id, student_id):
     try:
         student = Student.objects.get(student_id=student_id)

@@ -1,8 +1,13 @@
-from school_app.models import Student, ReceivesGrade, Feedback, ScheduledClass, Class
+from school_app.models import Student, ReceivesGrade, Feedback, ScheduledClass, Class, FeedbackTemplate
 import io
 from datetime import date
 from pathlib import Path
 from django.conf import settings
+from django.db import connection
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
 
 def check_student_report_status(student_id):
@@ -28,12 +33,12 @@ def check_student_report_status(student_id):
         except ReceivesGrade.DoesNotExist:
             pass
 
-        try:
-            feedback = Feedback.objects.get(class_no=cls.class_number, section=cls.section, student=student)
-            if feedback.comment is not None:
-                feedback_status = True
-        except Feedback.DoesNotExist:
-            pass
+        # try:
+            # feedback = Feedback.objects.get(class_no=cls.class_number, section=cls.section, student=student)
+            # if feedback.comment is not None:
+        feedback_status = True
+        # except Feedback.DoesNotExist:
+        #     pass
 
         the_class = Class.objects.get(class_number=cls.class_number, section=cls.section)
 
@@ -88,13 +93,25 @@ def check_class_report_status(class_id, section):
 
             print(grade.letter)
 
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT ft.comment_template AS template
+                    FROM feedback_template ft
+                    WHERE ft.class_number = %s
+                    AND ft.subject = %s
+                    AND ft.letter = %s
+                """, [the_class.class_number, the_class.subject, grade.letter.letter])
+
+                row = cursor.fetchone()
+                comment = row[0] if row else None
+
             student_records.append({
                 "class_id": the_class.class_number,
                 "section_id": the_class.section,
                 "class_name": the_class.class_name,
                 "student": student.to_dict(),
                 "grade": grade.letter.letter,
-                "feedback": feedback.comment if feedback else None
+                "feedback": comment
             })
 
     result = {
@@ -110,74 +127,79 @@ def get_student_grades(student):
 
 def build_pdf_bytes(student, grades_qs):
     """
-    Manually constructs a minimal PDF containing the student's report card.
+    Manually builds a minimal single‐page PDF listing each class & letter grade.
     """
     buf = io.BytesIO()
     w = buf.write
 
-    # 1) PDF header
-    w(b"%PDF-1.1\n%\xE2\xE3\xCF\xD3\n")
-
-    # 2) Objects
+    # PDF header
+    w(b"%PDF-1.1\n%\xe2\xe3\xcf\xd3\n")
     offsets = []
 
-    # obj 1: Catalog
+    # 1) Catalog
     offsets.append(buf.tell())
     w(b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n")
 
-    # obj 2: Pages
+    # 2) Pages
     offsets.append(buf.tell())
     w(b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n")
 
-    # Prepare the content stream (page text)
+    # 3) Compose lines
+    name = f"{student.student_id.first_name} {student.student_id.last_name}"
     lines = [
-        f"Report Card – {student.student_id.first_name} {student.student_id.last_name}",
+        f"Report Card - {name}",
         f"Issued: {date.today():%B %d, %Y}",
+        "",
+        "-------------------------------",
+        "Subjects & Grades:",
         "",
     ]
     for g in grades_qs:
-        subj   = g.klass.subject or ""
-        clsno  = g.klass.class_number
-        sect   = g.klass.section
-        letter = g.letter.letter if g.letter else ""
-        comm   = (g.comment or "")[:60]
-        lines.append(f"{subj} ({clsno}-{sect}): {letter} {comm}")
+        try:
+            class_obj = Class.objects.get(class_number=g.class_no, section=g.section)
+            subj = class_obj.subject or "(no subject)"
+            num = class_obj.class_number
+        except Class.DoesNotExist:
+            subj = "(unknown class)"
+            num = g.class_no
 
-    # Build PDF text drawing commands
-    text  = "BT\n/F1 12 Tf\n72 750 Td\n"
-    for line in lines:
-        # literal parentheses must be escaped
-        esc = line.replace("(", "\\(").replace(")", "\\)")
+        sect = g.section
+        letter = g.letter.letter if g.letter else "(no grade)"
+        lines.append(f"{subj} ({num}-{sect}): {letter}")
+
+    # 4) Build text stream
+    text = "BT\n/F1 12 Tf\n72 750 Td\n"
+    for ln in lines:
+        esc = ln.replace("(", "\\(").replace(")", "\\)")
         text += f"({esc}) Tj\n0 -14 Td\n"
     text += "ET\n"
-    data_stream = text.encode("latin1")
+    data = text.encode("latin1")
 
-    # obj 3: Page definition
+    # 5) Page object
     offsets.append(buf.tell())
     w(b"3 0 obj\n")
     w(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] ")
     w(b"/Contents 4 0 R /Resources << /Font << /F1 5 0 R>> >> >>\n")
     w(b"endobj\n")
 
-    # obj 4: Content stream
+    # 6) Content stream
     offsets.append(buf.tell())
-    w(f"4 0 obj\n<< /Length {len(data_stream)} >>\nstream\n".encode("latin1"))
-    w(data_stream)
+    w(f"4 0 obj\n<< /Length {len(data)} >>\nstream\n".encode("latin1"))
+    w(data)
     w(b"\nendstream\nendobj\n")
 
-    # obj 5: Font
+    # 7) Font
     offsets.append(buf.tell())
     w(b"5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n")
 
-    # 3) Cross-reference table
+    # 8) xref
     xref_pos = buf.tell()
     w(b"xref\n0 6\n0000000000 65535 f \n")
     for off in offsets:
         w(f"{off:010d} 00000 n \n".encode("latin1"))
 
-    # 4) Trailer
-    w(b"trailer\n<< /Size 6 /Root 1 0 R >>\n")
-    w(b"startxref\n")
+    # 9) Trailer
+    w(b"trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n")
     w(str(xref_pos).encode("latin1"))
     w(b"\n%%EOF")
 
@@ -186,11 +208,73 @@ def build_pdf_bytes(student, grades_qs):
 
 def save_pdf(pdf_bytes, student_id):
     """
-    Saves the PDF into MEDIA_ROOT/reports/ and returns its public URL.
+    Writes PDF under MEDIA_ROOT/reports/ and returns its URL.
     """
     reports_dir = Path(settings.MEDIA_ROOT) / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
+
     fname = f"reportcard_{student_id}_{date.today():%Y-%m-%d}.pdf"
     path  = reports_dir / fname
     path.write_bytes(pdf_bytes)
-    return settings.MEDIA_URL.rstrip("/") + "/reports/" + fname
+
+    return settings.MEDIA_URL.rstrip("/") + f"/reports/{fname}"
+
+
+def generate_report_card(student, grades_qs):
+    """
+    Generates a clean tabular PDF version of a student's report card with feedback from templates.
+    """
+    output_path = Path(settings.MEDIA_ROOT) / "reports" / f"reportcard_{student.student_id}_{date.today():%Y-%m-%d}.pdf"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    doc = SimpleDocTemplate(str(output_path), pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    title = Paragraph(f"<b>{student.student_id.first_name} {student.student_id.last_name} – Report Card</b>", styles['Title'])
+    issued = Paragraph(f"Issued: {date.today():%B %d, %Y}", styles['Normal'])
+    elements += [title, issued, Spacer(1, 12)]
+
+    data = [["Course", "Credit", "Final Grade", "Comments"]]
+    comment_style = ParagraphStyle('CommentStyle', fontSize=10, leading=12)
+
+    for g in grades_qs:
+        try:
+            class_obj = Class.objects.get(class_number=g.class_no, section=g.section)
+            course = class_obj.subject or f"Class {g.class_no}"
+        except Class.DoesNotExist:
+            course = f"Class {g.class_no}"
+
+        credit = "5.00"
+        grade_letter = g.letter.letter if g.letter else "-"
+
+        # Lookup comment from FeedbackTemplate using (letter, class_number)
+        try:
+            template = FeedbackTemplate.objects.get(letter=g.letter, class_no=g.class_no)
+            comment = template.template
+        except FeedbackTemplate.DoesNotExist:
+            comment = ""
+
+        wrapped_comment = Paragraph(comment, comment_style)
+        data.append([course, credit, grade_letter, wrapped_comment])
+
+    table = Table(data, colWidths=[
+        doc.width * 0.2,   # Course
+        doc.width * 0.1,   # Credit
+        doc.width * 0.1,   # Final Grade
+        doc.width * 0.6    # Comments
+    ])
+
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+
+    elements.append(table)
+    doc.build(elements)
+
+    return settings.MEDIA_URL.rstrip("/") + f"/reports/{output_path.name}"

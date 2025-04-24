@@ -2,7 +2,7 @@ from school_app.models import ScheduledClass, Student, Class, Schedule
 from django.db import connection, transaction
 
 
-def update_schedule(schedule_id, data):
+def update_schedule(schedule_id, data, request_type):
     # Extract data components
     grade_level = data.get('grade_level')
     classes = data.get('classes', [])
@@ -28,6 +28,11 @@ def update_schedule(schedule_id, data):
                     [schedule_id]
                 )
                 schedule_exists = cursor.fetchone()[0]
+
+            if schedule_exists and request_type == 'POST':
+                return {"message": "Unable to create schedule the schedule id already exists", "status": 400}
+            if not schedule_exists and request_type == 'PUT':
+                return {"message": "Unable to update schedule the schedule id doesn't exist", "status": 400}
 
             # Handle the schedule record in the parent table
             with connection.cursor() as cursor:
