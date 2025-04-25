@@ -3,7 +3,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from school_app.models import SchoolMember, Student, Teacher
+from school_app.models import SchoolMember
 from ..utils import auth as auth_handler
 
 

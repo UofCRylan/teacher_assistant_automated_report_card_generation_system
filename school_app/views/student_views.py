@@ -1,4 +1,3 @@
-import json
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -59,12 +58,10 @@ def student_attendance(request, student_id):
                 del value['teacherid']
                 del value['studentid']
 
-                print(value)
-
                 result.append(value)
 
             return Response(result, status=200)
-        except:
+        except Exception as e:
             return Response([], status=404)
 
 

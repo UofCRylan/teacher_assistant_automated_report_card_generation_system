@@ -10,7 +10,6 @@ def update_grades(records):
         student_id = record['student_id']
         letter_value = record['letter']
 
-        # Extract class and section from record
         class_id = record.get('class_id')
         section_id = record.get('section')
 
@@ -77,7 +76,7 @@ def update_grades(records):
     elif len(results) == 1:
         return results[0]
     else:
-        return {"message": f"Successfully processed {len(results)} grades", "status": 200, "details": results}
+        return {"message": f"Successfully processed updated grades", "status": 200, "details": results}
 
 def get_grade(class_id, section_id, student_id):
     try:
@@ -94,7 +93,6 @@ def get_grades(class_id, section_id):
     result = []
 
     grades = ReceivesGrade.objects.filter(class_no=class_id, section=section_id)
-    # print(grades)
     for grade in grades:
         result.append(grade.to_dict())
 

@@ -51,6 +51,12 @@ def update_class(class_id, section_id, class_name, subject, time_start, time_end
             return status
 
         if request_type == 'PUT':
+            """
+            1. Check classroom available during new time
+            2. It doesn’t overlap with any classes currently in its schedule
+            """
+
+
             # Edit class
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -145,12 +151,24 @@ def validate_class(data):
     all_classes = Class.objects.all()
 
     for cls in all_classes:
-        if cls.class_number != data['class_id'] or cls.section != data['section']:
-            if overlap(data['time_start'], data['time_end'], cls.time_start, cls.time_end):
-                if int(data['teacher_id']) == cls.teacher.teacher_id.id:
-                    return {'message': 'Teacher is teaching another class during selected time', 'status': 400}
-                elif int(data['room_id']) == cls.room_id.room_id:
-                    return {'message': 'Room is in use during selected time', 'status': 400}
+        if cls.class_number == data['class_id'] and cls.section == data['section']:
+            continue
+
+        if overlap(data['time_start'], data['time_end'], cls.time_start, cls.time_end):
+            if int(data['teacher_id']) == cls.teacher.teacher_id.id:
+                return {'message': 'Teacher is teaching another class during selected time', 'status': 400}
+            elif int(data['room_id']) == cls.room_id.room_id:
+                return {'message': 'Room is in use during selected time', 'status': 400}
+
+            try:
+                new_class_schedule = ScheduledClass.objects.get(class_number=data['class_id'], section=data['section'])
+                old_class_schedule = ScheduledClass.objects.get(class_number=cls.class_number, section=cls.section)
+
+                if new_class_schedule.schedule_id == old_class_schedule.schedule_id:
+                    return {'message': 'Unable to edit class as it overlaps another class in its schedule', 'status': 400}
+
+            except ScheduledClass.DoesNotExist:
+                pass
 
     return {'message': 'No overlap', 'status': 200}
 

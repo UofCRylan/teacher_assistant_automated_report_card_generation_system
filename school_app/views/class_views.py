@@ -1,4 +1,3 @@
-import json
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from ..authentication import require_authorization
@@ -26,10 +25,8 @@ def default(request, user_type):
 
 
     if class_id and section_id and class_name and subject and time_start and time_end and teacher_id and room_id:
-        print("IN")
         result = manager.update_class(class_id, section_id, class_name,
                                       subject, time_start, time_end, teacher_id, room_id, request.method)
-        print(result)
 
         return Response(result['message'], status=result['status'])
     else:
@@ -60,26 +57,14 @@ def get_feedbacks(request, class_id, section_id):
 
     return Response(result, status=200)
 
-@api_view(['GET', 'POST', 'PUT'])
+@api_view(['GET'])
 def handle_grade(request, class_id, section_id, student_id):
-    if request.method == 'GET':
-        result = grades.get_grade(class_id, section_id, student_id)
-        print("RESULT: ", result)
-        if result:
-            return Response(result, status=200)
-        else:
-            return Response(data=None, status=200)
+    result = grades.get_grade(class_id, section_id, student_id)
 
+    if result:
+        return Response(result, status=200)
     else:
-        pass
-        # data = parse_request_data(request)
-        # letter = data['letter']
-        #
-        # if letter:
-        #     result = grades.update_grade(class_id, section_id, student_id, letter)
-        #     return Response(result['message'], status=result['status'])
-        # else:
-        #     return Response({"message": "Missing required fields"}, status=400)
+        return Response(data=None, status=200)
 
 @api_view(['GET', 'POST', 'PUT'])
 def handle_feedback(request, class_id, section_id, student_id):

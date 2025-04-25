@@ -1,8 +1,5 @@
-import json
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from ..authentication import require_authorization
 from ..utils import ipp
 from school_app.models import Teacher
 
