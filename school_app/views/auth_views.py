@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from school_app.models import SchoolMember, Student, Teacher
+from ..utils import auth as auth_handler
 
 
 @api_view(['POST'])
@@ -19,27 +20,14 @@ def auth(request):
         # Check if user exists with this email and password
         try:
             member = SchoolMember.objects.get(email=email, password=password)
-            
-            # Check if the member is a student or teacher
-            user_type = None
-            user_id = None
-            
-            if Student.objects.filter(student_id=member.id).exists():
-                user_type = 'student'
-                user_id = member.id
-            
-            elif Teacher.objects.filter(teacher_id=member.id).exists():
-                user_type = 'teacher'
-                user_id = member.id
-            else:
-                user_type = 'admin'
-                user_id = member.id
+
+            user_type = auth_handler.get_user_type(member.id)
             
             if user_type:
                 user = {
                     'success': True,
                     'user_type': user_type,
-                    'user_id': user_id,
+                    'user_id': member.id,
                     'first_name': member.first_name,
                     'last_name': member.last_name
                 }
@@ -59,6 +47,7 @@ def auth(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me(request):
-    print(request.user)
+    result = request.user.to_dict()
+    result['type'] = auth_handler.get_user_type(request.user.id)
 
-    return Response(request.user.to_dict(), 200)
+    return Response(result, 200)

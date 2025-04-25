@@ -11,30 +11,30 @@ from ..utils.data_handler import parse_request_data
 @permission_classes([IsAuthenticated])
 @require_authorization(['teacher', 'admin'])
 def default(request, user_type):
-    if request.method != "GET":
-        data = parse_request_data(request)
-        class_id = data['class_id']
-        section_id = data['section_id']
-        class_name = data['class_name']
-        subject = data['subject']
-        time_start = data['time_start']
-        time_end = data['time_end']
-        teacher_id = data['teacher_id']
-        room_id = data['room_id']
-
-
-        if class_id and section_id and class_name and subject and time_start and time_end and teacher_id and room_id:
-            print("IN")
-            result = manager.update_class(class_id, section_id, class_name,
-                                          subject, time_start, time_end, teacher_id, room_id, request.method)
-            print(result)
-
-            return Response(result['message'], status=result['status'])
-        else:
-            return Response({"message": "Missing required fields"}, status=400)
-
-    else:
+    if request.method == "GET":
         return Response(manager.get_classes(), status=200)
+
+    data = parse_request_data(request)
+    class_id = data['class_id']
+    section_id = data['section_id']
+    class_name = data['class_name']
+    subject = data['subject']
+    time_start = data['time_start']
+    time_end = data['time_end']
+    teacher_id = data['teacher_id']
+    room_id = data['room_id']
+
+
+    if class_id and section_id and class_name and subject and time_start and time_end and teacher_id and room_id:
+        print("IN")
+        result = manager.update_class(class_id, section_id, class_name,
+                                      subject, time_start, time_end, teacher_id, room_id, request.method)
+        print(result)
+
+        return Response(result['message'], status=result['status'])
+    else:
+        return Response({"message": "Missing required fields"}, status=400)
+
 
 @api_view(['GET'])
 def get_class(request, class_id, section_id):

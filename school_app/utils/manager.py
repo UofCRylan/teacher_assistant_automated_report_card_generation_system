@@ -2,14 +2,13 @@ from school_app.models import ScheduledClass
 from ..models import Class, Teacher, ClassRoom, Student
 
 from django.db import connection
-from django.db.utils import IntegrityError
+
 from ..models import Teacher, ClassRoom, Class
-from ..views.reports_views import status
 
 
 def update_class(class_id, section_id, class_name, subject, time_start, time_end, teacher_id, room_id, request_type):
     try:
-        # First verify the teacher and room exist
+        # Check that teacher and room exist
         try:
             teacher = Teacher.objects.get(teacher_id=teacher_id)
             room = ClassRoom.objects.get(room_id=room_id)
@@ -24,7 +23,7 @@ def update_class(class_id, section_id, class_name, subject, time_start, time_end
                 "status": 400
             }
 
-        # Check if the class exists using raw SQL
+        # Check if the class exists
         with connection.cursor() as cursor:
             cursor.execute(
                 "SELECT COUNT(*) FROM Class WHERE class_number = %s AND section = %s",
@@ -32,73 +31,65 @@ def update_class(class_id, section_id, class_name, subject, time_start, time_end
             )
             class_exists = cursor.fetchone()[0] > 0
 
-        if class_exists and request_type == 'PUT':
-            # Update existing class using raw SQL
-            data = {
-                "time_start": time_start,
-                "time_end": time_end,
-                "teacher_id": teacher_id,
-                "room_id": room_id,
+        if class_exists and request_type == 'POST':
+            return {"message": "Unable to create class a class with the class id/section already exists", "status": 400}
+        if not class_exists and request_type == 'PUT':
+            return {"message": "Unable to update class because the class doesn't exist", "status": 400}
+
+        data = {
+            "time_start": time_start,
+            "time_end": time_end,
+            "teacher_id": teacher_id,
+            "room_id": room_id,
+            'class_id': class_id,
+            'section': section_id,
+        }
+
+        status = validate_class(data)
+
+        if status['status'] != 200:
+            return status
+
+        if request_type == 'PUT':
+            # Edit class
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE Class 
+                    SET class_name = %s, 
+                        subject = %s, 
+                        time_start = %s, 
+                        time_end = %s, 
+                        teacher_id = %s, 
+                        room_id = %s
+                    WHERE class_number = %s AND section = %s
+                    """,
+                    [class_name, subject, time_start, time_end,
+                     teacher.teacher_id.id, room.room_id, class_id, section_id]
+                )
+
+            return {
+                "message": {"message": "Updated class"},
+                "status": 200
             }
-
-            status = validate_class(data)
-            if status['status'] == 200:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        """
-                        UPDATE Class 
-                        SET class_name = %s, 
-                            subject = %s, 
-                            time_start = %s, 
-                            time_end = %s, 
-                            teacher_id = %s, 
-                            room_id = %s
-                        WHERE class_number = %s AND section = %s
-                        """,
-                        [class_name, subject, time_start, time_end,
-                         teacher.teacher_id.id, room.room_id, class_id, section_id]
-                    )
-
-                return {
-                    "message": {"message": "Updated class"},
-                    "status": 200
-                }
-            else:
-                return status
-
-        elif not class_exists and request_type == 'POST':
-            # Create new class using raw SQL
-            data = {
-                "time_start": time_start,
-                "time_end": time_end,
-                "teacher_id": teacher_id,
-                "room_id": room_id,
-            }
-
-            status = validate_class(data)
-            if status['status'] == 200:
-                with connection.cursor() as cursor:
-                    cursor.execute(
-                        """
-                        INSERT INTO Class 
-                        (class_number, section, class_name, subject, time_start, time_end, teacher_id, room_id)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                        """,
-                        [class_id, section_id, class_name, subject, time_start, time_end,
-                         teacher.teacher_id.id, room.room_id]
-                    )
-
-                return {
-                    "message": {"message": "Created class"},
-                    "status": 201
-                }
-            else:
-                return status
 
         elif request_type == 'POST':
-            return {"message": "Class with same class id and section already exists", "status": 400}
-        else:
-            return {"message": "Class with the class id and section does not exist", "status": 400}
+            # Create new class
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO Class 
+                    (class_number, section, class_name, subject, time_start, time_end, teacher_id, room_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    [class_id, section_id, class_name, subject, time_start, time_end,
+                     teacher.teacher_id.id, room.room_id]
+                )
+
+            return {
+                "message": {"message": "Created class"},
+                "status": 201
+            }
 
     except Exception as e:
         return {
@@ -154,7 +145,7 @@ def validate_class(data):
     all_classes = Class.objects.all()
 
     for cls in all_classes:
-        if cls.class_number != data['class_id'] and cls.section != data['section']:
+        if cls.class_number != data['class_id'] or cls.section != data['section']:
             if overlap(data['time_start'], data['time_end'], cls.time_start, cls.time_end):
                 if int(data['teacher_id']) == cls.teacher.teacher_id.id:
                     return {'message': 'Teacher is teaching another class during selected time', 'status': 400}

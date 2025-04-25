@@ -25,7 +25,7 @@ def get_all_schedules(request, user_type):
     return Response(result, 200)
 
 @api_view(['GET', 'POST', 'PUT'])
-def get_schedule(request, schedule_id):
+def handle_schedule(request, schedule_id):
     if request.method == 'GET':
         result = schedule.get_schedule(schedule_id)
 
