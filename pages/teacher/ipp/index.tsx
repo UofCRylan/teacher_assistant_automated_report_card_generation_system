@@ -11,6 +11,7 @@ import Text from "@/src/components/ui/Input/Text";
 import Button from "@/src/components/ui/Button/Button";
 import IconButton from "@/src/components/ui/Button/IconButton.jsx";
 import { RiAddLine } from "@remixicon/react";
+import { toast } from "react-toastify";
 
 const TeacherIppPage = () => {
   const [ipps, setIpps] = useState(undefined);
@@ -58,7 +59,8 @@ const TeacherIppPage = () => {
     };
 
     const result = await ippHandler.updateIpp(student_id, data);
-    if (result.status === 201) {
+    if (result.status === 200) {
+      toast.success("Successfully created ipp");
       setShowModal(false);
       setGoals("");
       setEA("");

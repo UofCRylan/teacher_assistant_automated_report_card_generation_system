@@ -67,30 +67,30 @@ const TeacherReportsDetailPage = () => {
   //   setShowModal(true);
   // };
 
-  const handleSaveFeedback = async () => {
-    if (selectedStudent) {
-      const { classID, section } = router.query;
+  // const handleSaveFeedback = async () => {
+  //   if (selectedStudent) {
+  //     const { classID, section } = router.query;
 
-      const updated = students.map((s) =>
-        s.id === selectedStudent.id ? { ...s, feedback: newFeedback } : s
-      );
-      setStudents(updated);
+  //     const updated = students.map((s) =>
+  //       s.id === selectedStudent.id ? { ...s, feedback: newFeedback } : s
+  //     );
+  //     setStudents(updated);
 
-      const payload = {
-        student_id: selectedStudent.id,
-        feedback: newFeedback,
-      };
+  //     const payload = {
+  //       student_id: selectedStudent.id,
+  //       feedback: newFeedback,
+  //     };
 
-      const result = await feedbackHandler.updateFeedback(
-        classID,
-        section,
-        selectedStudent.id,
-        payload
-      ); // TODO: Check
+  //     const result = await feedbackHandler.updateFeedback(
+  //       classID,
+  //       section,
+  //       selectedStudent.id,
+  //       payload
+  //     );
 
-      setShowModal(false);
-    }
-  };
+  //     setShowModal(false);
+  //   }
+  // };
 
   return (
     <div className={styles.container}>

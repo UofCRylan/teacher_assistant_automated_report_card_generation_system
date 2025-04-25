@@ -69,8 +69,7 @@ const StudentReportPage = () => {
                 <p>
                   Ready for Report:{" "}
                   <span className={isReady ? styles.success : styles.pending}>
-                    {isReady ? "Ready" : "Waiting"}{" "}
-                    {/* TODO: Add remix icons */}
+                    {isReady ? `Ready` : "Waiting"}
                   </span>
                 </p>
               </div>

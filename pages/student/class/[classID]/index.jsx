@@ -59,7 +59,7 @@ const StudentClassPage = () => {
       };
 
       fetchData();
-      fetchClassListData(); // TODO - Examine
+      fetchClassListData();
 
       const fetchGrade = async () => {
         try {

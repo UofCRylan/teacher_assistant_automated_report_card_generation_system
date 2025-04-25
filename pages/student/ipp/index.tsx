@@ -17,7 +17,6 @@ const StudentIppPage = () => {
         const result = await ippHandler.getStudentsIpp(user.data.id);
 
         if (result.status === 200) {
-          toast.success("Successfully created ipp");
           setIpps(result.data);
         }
         if (result.error) {

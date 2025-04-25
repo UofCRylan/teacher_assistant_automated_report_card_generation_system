@@ -55,6 +55,7 @@ class AccountManager {
 
       this.#user = accessToken;
       this.accessToken = accessToken;
+      this.userToken = accessToken;
       cookies.set("user", accessToken, {
         expires: date,
         maxAge: 90 * 86400,

@@ -26,7 +26,6 @@ const StudentIppDetailPage = () => {
         );
 
         if (result.status === 200) {
-          toast.success("Successfully created ipp");
           setIpp(result.data);
         }
         if (result.error) {

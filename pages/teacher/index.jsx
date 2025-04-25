@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TeacherScheduleView from "@/src/components/pages/general/TeacherScheduleView.tsx";
 import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler";
 import Layout from "../../src/components/layout/Layout";
+import accountManager from "@/src/utils/Managers/AccountManager.js";
 
 const TeacherHome = () => {
   const [schedule, setSchedule] = useState(undefined);

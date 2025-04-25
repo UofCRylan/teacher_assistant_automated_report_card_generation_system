@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import Modal from "@/src/components/ui/Modal/Modal";
 import Text from "@/src/components/ui/Input/Text.tsx";
 import Button from "@/src/components/ui/Button/Button";
+import { toast } from "react-toastify";
 
 const TeacherIppDetailPage = () => {
   const router = useRouter();
@@ -54,7 +55,9 @@ const TeacherIppDetailPage = () => {
     };
 
     const result = await ippHandler.updateIpp(studentID, updatedData);
+    console.log("Result: ", result);
     if (result.status === 200) {
+      toast.success("Successfully created ipp");
       setShowModal(false);
       setIpp({ ...ipp, ...updatedData });
     }

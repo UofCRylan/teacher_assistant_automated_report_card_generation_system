@@ -11,6 +11,7 @@ const StudentHomePage = () => {
       const result = await scheduleHandler.getUserSchedule();
 
       if (result.status === 200) {
+        console.log("Result: ", result);
         setSchedule(result.data.classes);
       }
     };
