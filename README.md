@@ -114,7 +114,7 @@ In the terminal navigate to the directory where your virtual environment is and 
 First install the required imports then start the server: Run the commands within the virtual environment in the terminal
 ```python
 npm install
-npm run build
+npm run dev
 npm start
 ```
 Now in your browser (chrome, firefox, etc) copy and paste thelink to the server
