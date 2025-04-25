@@ -20,7 +20,6 @@ def require_authorization(types):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
             user_type = None
-            print("Requesting user id: ", request.user.id)
 
             if Student.objects.filter(student_id=request.user.id).exists():
                 user_type = 'student'

@@ -1,7 +1,7 @@
 from school_app.models import IndividualProgressPlan
 from django.db import connection
 
-def update_ipp(teacher_id, student_id, goals, s_d, e_a):
+def update_ipp(teacher_id, student_id, goals, e_a, s_d):
     try:
         with connection.cursor() as cursor:
             # Check if record exists
@@ -42,7 +42,6 @@ def update_ipp(teacher_id, student_id, goals, s_d, e_a):
         return response
 
     except Exception as e:
-        # If there's an error, Django will automatically roll back the transaction
         return {"message": f"Error: {str(e)}", "status": 500}
 
 

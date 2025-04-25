@@ -248,10 +248,10 @@ class Feedback(models.Model):
         # try:
         class_obj = Class.objects.get(class_number=self.class_no, section=self.section)
         class_dict = class_obj.to_dict()
+        receives_grade_obj = ReceivesGrade.objects.get(class_no=self.class_no, section=self.section, student=self.student)
         # except Class.DoesNotExist:
         #     class_dict = None
 
-        print(self.class_no, class_obj.subject)
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT ft.comment_template AS template
@@ -259,7 +259,7 @@ class Feedback(models.Model):
                 WHERE ft.class_number = %s
                 AND ft.subject = %s
                 AND ft.letter = %s
-            """, [self.class_no, class_obj.subject, self.letter.letter])
+            """, [self.class_no, class_obj.subject, receives_grade_obj.letter.letter])
 
             row = cursor.fetchone()
             comment = row[0] if row else None

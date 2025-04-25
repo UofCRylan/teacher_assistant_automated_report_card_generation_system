@@ -45,7 +45,6 @@ def update_attendance(class_id, section, records):
 
             if count > 0:
                 # Update existing record
-                print("Updating...")
                 cursor.execute(
                     """
                     UPDATE attendance SET status = %s
@@ -56,7 +55,6 @@ def update_attendance(class_id, section, records):
                 )
             else:
                 # Insert new record
-                print("Inserting...")
                 cursor.execute(
                     """
                     INSERT INTO attendance 

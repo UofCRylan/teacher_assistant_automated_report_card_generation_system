@@ -52,22 +52,17 @@ def update_schedule(schedule_id, data, request_type):
                             "UPDATE schedule SET grade_level = %s WHERE schedule_id = %s",
                             [grade_level, schedule_id]
                         )
-                        print(f"Updated schedule {schedule_id} with grade level {grade_level}")
                     else:
                         # Create a new schedule record
                         cursor.execute(
                             "INSERT INTO schedule (schedule_id, grade_level) VALUES (%s, %s)",
                             [schedule_id, grade_level]
                         )
-                        print(f"Created new schedule {schedule_id} with grade level {grade_level}")
-
                 with connection.cursor() as cursor:
                     cursor.execute(
                         "DELETE FROM scheduled_class WHERE schedule_id = %s",
                         [schedule_id]
                     )
-                    print(f"Deleted existing classes for schedule {schedule_id}")
-
                 with connection.cursor() as cursor:
                     for index, class_item in enumerate(classes):
                         class_number = class_item.get('class_id')
@@ -96,7 +91,6 @@ def update_schedule(schedule_id, data, request_type):
                 "status": 500
             }
     except Exception as e:
-        print(f"Error in update_schedule: {str(e)}")
         return {
             "message": f"Error updating schedule: {str(e)}",
             "status": 500
@@ -183,7 +177,6 @@ def convert_to_set(classes):
     return result
 
 def remove_grades(class_id, section):
-    print("Removing grade for class: ", class_id, section)
     with connection.cursor() as cursor:
         cursor.execute(
             """

@@ -91,8 +91,6 @@ def check_class_report_status(class_id, section):
                 feedback = None
                 status = False
 
-            print(grade.letter)
-
             with connection.cursor() as cursor:
                 cursor.execute("""
                     SELECT ft.comment_template AS template

@@ -1,5 +1,5 @@
 from django.db import connection
-from school_app.models import ReceivesGrade, Student, FinalGrade
+from school_app.models import ReceivesGrade, Student, FinalGrade, Feedback
 
 
 def update_grades(records):
