@@ -3,6 +3,7 @@ from ..views import class_views
 
 urlpatterns = [
     path('', class_views.default, name='default'),
+    path('scheduled', class_views.get_scheduled, name='scheduled'),
     path('attendance', class_views.get_attendance, name='get-student-attendance'),
     path('rooms', class_views.get_rooms, name='get-class-rooms'),
     path('<int:class_id>/section/<int:section_id>', class_views.get_class, name='get-class'),

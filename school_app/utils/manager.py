@@ -127,6 +127,16 @@ def get_classes():
 
     return results
 
+def get_scheduled_classes():
+    results = []
+
+    classes = ScheduledClass.objects.all()
+
+    for cls in classes:
+        results.append(cls.to_dict())
+
+    return results
+
 def get_students(class_id, section_id):
     result = []
 

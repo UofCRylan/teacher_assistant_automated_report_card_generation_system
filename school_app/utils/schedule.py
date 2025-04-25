@@ -87,7 +87,7 @@ def update_schedule(schedule_id, data, request_type):
                                 }
 
             return {
-                "message": f"Schedule {'updated' if schedule_exists else 'created'} successfully with {inserted_count} classes",
+                "message": f"Schedule {'updated' if schedule_exists else 'created'} successfully",
                 "status": 200
             }
         except Exception as e:

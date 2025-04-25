@@ -32,6 +32,12 @@ def default(request, user_type):
     else:
         return Response({"message": "Missing required fields"}, status=400)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@require_authorization(['teacher', 'admin'])
+def get_scheduled(request, user_type):
+    if request.method == "GET":
+        return Response(manager.get_scheduled_classes(), status=200)
 
 @api_view(['GET'])
 def get_class(request, class_id, section_id):
