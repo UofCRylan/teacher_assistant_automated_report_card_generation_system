@@ -5,7 +5,6 @@ import reportHandler from "@/src/utils/Handlers/ReportHandler";
 import { useRouter } from "next/router";
 import feedbackHandler from "@/src/utils/Handlers/FeedbackHandler";
 
-// Updated type definitions
 type StudentRecord = {
   student: {
     data: {
@@ -54,8 +53,6 @@ const TeacherReportsDetailPage = () => {
       );
 
       if (result.status === 200) {
-        console.log("Teacher report: ", result.data);
-
         const formattedStudents = transformData(result.data);
         setStudents(formattedStudents);
       }
@@ -74,13 +71,11 @@ const TeacherReportsDetailPage = () => {
     if (selectedStudent) {
       const { classID, section } = router.query;
 
-      // Update local state
       const updated = students.map((s) =>
         s.id === selectedStudent.id ? { ...s, feedback: newFeedback } : s
       );
       setStudents(updated);
 
-      // Prepare payload for API
       const payload = {
         student_id: selectedStudent.id,
         feedback: newFeedback,
@@ -91,7 +86,7 @@ const TeacherReportsDetailPage = () => {
         section,
         selectedStudent.id,
         payload
-      );
+      ); // TODO: Check
 
       setShowModal(false);
     }
@@ -99,7 +94,11 @@ const TeacherReportsDetailPage = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.header}>Create Report Cards</h1>
+      <h1 className={styles.header}>Report Card Status</h1>
+      <small>
+        In order for a student to download a report card they must have a grade
+        and feedback for all of their classes
+      </small>
       <div className={styles.actions}>
         {/* <button className={styles.button}>Generate Feedback</button> */}
         {/* <button className={styles.button}>Generate Report Card</button> */}

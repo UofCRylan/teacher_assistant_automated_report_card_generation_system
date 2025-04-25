@@ -1,5 +1,6 @@
 import axios from "axios";
 import accountManager from "../Managers/AccountManager";
+import { toast } from "react-toastify";
 
 class ReportHandler {
   getReportCard = accountManager.requireAuth(async () => {
@@ -11,24 +12,21 @@ class ReportHandler {
         },
       });
 
-      // Create blob URL and trigger download
       const url = window.URL.createObjectURL(
         new Blob([response.data], { type: "application/pdf" })
       );
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "ReportCard.pdf"); // Customize filename if needed
+      link.setAttribute("download", "ReportCard.pdf");
       document.body.appendChild(link);
       link.click();
 
-      // Clean up
       link.remove();
       window.URL.revokeObjectURL(url);
 
       return { status: 200 };
     } catch (error) {
-      console.error("Download failed", error);
-      return { error };
+      return { error: error };
     }
   });
 

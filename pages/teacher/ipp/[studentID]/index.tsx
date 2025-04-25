@@ -54,10 +54,10 @@ const TeacherIppDetailPage = () => {
       s_d,
     };
 
-    const result = await ippHandler.updateIpp(studentID, updatedData); // Assuming .id is IPP ID
+    const result = await ippHandler.updateIpp(studentID, updatedData);
     if (result.status === 200) {
       setShowModal(false);
-      setIpp({ ...ipp, ...updatedData }); // Optimistically update UI
+      setIpp({ ...ipp, ...updatedData });
     }
   };
 

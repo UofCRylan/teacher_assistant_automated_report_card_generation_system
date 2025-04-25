@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import accountManager from "@/src/utils/Managers/AccountManager.js";
 
-// This function can be marked `async` if using `await` inside
 export async function middleware(request) {
   let userToken = request.cookies.get("user");
 

@@ -86,32 +86,34 @@ const AdminEditSchedulePage = () => {
             </div>
           ))}
       </div>
-      {isModalOpen && selectedSchedule && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>Schedule ID: {selectedSchedule.schedule_id}</h2>
-            <div className={styles.classList}>
-              {selectedSchedule.classes.map((classItem) => (
-                <div key={classItem.id} className={styles.classItem}>
-                  <h3>{classItem.name}</h3>
-                  <p>
-                    Subject: {classItem.subject} | Teacher: {classItem.teacher}
-                  </p>
-                  <p>
-                    Time: {classItem.startTime} - {classItem.endTime}
-                  </p>
-                </div>
-              ))}
+      {isModalOpen &&
+        selectedSchedule && ( // TODO Design
+          <div className={styles.modalOverlay} onClick={closeModal}>
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2>Schedule ID: {selectedSchedule.schedule_id}</h2>
+              <div className={styles.classList}>
+                {selectedSchedule.classes.map((classItem) => (
+                  <div key={classItem.id} className={styles.classItem}>
+                    <h3>{classItem.name}</h3>
+                    <p>
+                      Subject: {classItem.subject} | Teacher:{" "}
+                      {classItem.teacher}
+                    </p>
+                    <p>
+                      Time: {classItem.startTime} - {classItem.endTime}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <button className={styles.closeButton} onClick={closeModal}>
+                Close
+              </button>
             </div>
-            <button className={styles.closeButton} onClick={closeModal}>
-              Close
-            </button>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

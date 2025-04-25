@@ -8,7 +8,6 @@ import { useRouter } from "next/router";
 import Button from "../../../../src/components/ui/Button/Button";
 
 const AdminEditAttendancePage = () => {
-  // Attendance status options
   const attendanceOptions = [
     { value: "present", label: "Present" },
     { value: "absent", label: "Absent" },
@@ -16,15 +15,12 @@ const AdminEditAttendancePage = () => {
   ];
   const router = useRouter();
 
-  // State for students in class and attendance records
   const [classStudents, setClassStudents] = useState([]);
   const [classInfo, setClassInfo] = useState(undefined);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
 
-  // Current date for attendance in YYYY-MM-DD format
-  const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+  const currentDate = new Date().toISOString().split("T")[0];
 
-  // Format date for display purposes (MM-DD-YYYY)
   const formatDateForDisplay = (dateString) => {
     const date = new Date(dateString);
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -33,7 +29,6 @@ const AdminEditAttendancePage = () => {
     return `${month}-${day}-${year}`;
   };
 
-  // Initialize students and attendance records from the provided data
   useEffect(() => {
     if (!router.isReady) {
       return;
@@ -47,16 +42,14 @@ const AdminEditAttendancePage = () => {
 
       const studentsInClass = await classHandler.getStudents(classID, section);
 
-      // Set the students in class
       setClassStudents(studentsInClass.data);
 
-      // Get existing attendance records
       const existingAttendanceRecords = await attendanceHandler.getAttendance(
         classID,
         section
       );
 
-      // Create initial attendance records for all students
+      // Create attendance records for all students
       const initialAttendanceRecords = studentsInClass.data.map((student) => {
         // Check if student already has an attendance record for the current day
         const existingRecord = existingAttendanceRecords.data.find(
@@ -94,7 +87,7 @@ const AdminEditAttendancePage = () => {
               },
             },
             student: student,
-            date: currentDate, // Use YYYY-MM-DD format consistently
+            date: currentDate,
             status: null, // Default to null/blank for students without records
           };
         }
@@ -107,7 +100,6 @@ const AdminEditAttendancePage = () => {
   }, [router.isReady]);
 
   const handleAttendanceChange = (studentId, selectedOption) => {
-    // Update the attendance records
     const updatedRecords = attendanceRecords.map((record) =>
       record.student.data.id === studentId
         ? { ...record, status: selectedOption?.value || null }

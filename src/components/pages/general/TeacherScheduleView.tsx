@@ -35,20 +35,15 @@ const TeacherScheduleView = ({ schedule }) => {
     currentTime = addMinutes(currentTime, 15);
   }
 
-  // Find the closest 15-minute time slot for a given time
   const findNearestTimeSlot = (timeStr) => {
     try {
-      // Parse the time
       const time = parse(timeStr, "HH:mm", new Date());
 
-      // Get hours and minutes
       const hours = getHours(time);
       const minutes = getMinutes(time);
 
-      // Round to nearest 15 minute increment
       const roundedMinutes = Math.floor(minutes / 15) * 15;
 
-      // Create a new date with rounded minutes
       const roundedTime = setMinutes(
         parse(`${hours}:00`, "H:mm", new Date()),
         roundedMinutes
@@ -61,19 +56,12 @@ const TeacherScheduleView = ({ schedule }) => {
     }
   };
 
-  // Assign classes to specific days - for now using simple approach
-  const getClassesByDay = (day) => {
-    // This could be enhanced to filter classes by day if that data is added
-    return schedule;
-  };
-
   const renderDayColumn = (day) => {
-    const classes = getClassesByDay(day);
+    const classes = schedule;
     const elements = [];
     let index = 0;
-    const processedSlots = new Set(); // Keep track of which slots we've handled
+    const processedSlots = new Set();
 
-    // Pre-calculate the nearest time slot for each class and organize by time slot
     const classesByTimeSlot = {};
     classes.forEach((cls) => {
       const nearestSlot = findNearestTimeSlot(cls.time_start);
@@ -86,12 +74,11 @@ const TeacherScheduleView = ({ schedule }) => {
     while (index < timeSlots.length) {
       const currentSlot = timeSlots[index];
 
-      // Check if a class starting at this time slot
       if (
         classesByTimeSlot[currentSlot] &&
         classesByTimeSlot[currentSlot].length > 0
       ) {
-        const clsItem = classesByTimeSlot[currentSlot][0]; // Get the first class at this time
+        const clsItem = classesByTimeSlot[currentSlot][0];
 
         try {
           const startTime = parse(clsItem.time_start, "HH:mm", new Date());
@@ -119,7 +106,6 @@ const TeacherScheduleView = ({ schedule }) => {
             </div>
           );
 
-          // Mark this time slot as processed
           processedSlots.add(currentSlot);
           index += slotCount;
         } catch (error) {

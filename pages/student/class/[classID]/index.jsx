@@ -59,7 +59,7 @@ const StudentClassPage = () => {
       };
 
       fetchData();
-      fetchClassListData();
+      fetchClassListData(); // TODO - Examine
 
       const fetchGrade = async () => {
         try {
@@ -73,7 +73,6 @@ const StudentClassPage = () => {
           );
 
           if (result.status === 200) {
-            console.log("Grade: ", result);
             setGrade(result.data);
           }
         } catch (error) {

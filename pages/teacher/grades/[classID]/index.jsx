@@ -52,7 +52,7 @@ const TeacherEditGradePage = () => {
 
         const merged = studentsFromClass.data.map((studentEntry) => {
           const matchingGrade = gradesFromClass.data.find(
-            (g) => g.student.data.id === studentEntry.data.id
+            (obj) => obj.student.data.id === studentEntry.data.id
           );
 
           return {
@@ -178,7 +178,7 @@ const TeacherEditGradePage = () => {
                 options={gradeOptions}
                 value={
                   student.grade
-                    ? gradeOptions.find((g) => g.value === student.grade)
+                    ? gradeOptions.find((obj) => obj.value === student.grade)
                     : null
                 }
                 onChange={(selected) =>

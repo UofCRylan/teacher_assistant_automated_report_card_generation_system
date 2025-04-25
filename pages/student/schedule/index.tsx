@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
 import ScheduleView from "@/src/components/pages/general/ScheduleView.tsx";
 import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler";
 import Layout from "@/src/components/layout/Layout.js";
@@ -26,7 +25,6 @@ const StudentSchedulePage = () => {
       ) : (
         <span>Loading...</span>
       )}
-      <MessageAlert />
     </main>
   );
 };

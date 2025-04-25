@@ -35,7 +35,7 @@ const StudentGradeCard: React.FC<StudentGradeCardProps> = ({
       <div className={getGradeClass(grade)}>
         {grade
           ? `Your Grade: ${grade.grade.letter}`
-          : "📌 Your grade isn't available yet. Check back soon!"}
+          : "Your grade isn't available yet. Check back soon!"}
       </div>
 
       <div className={styles.feedbackBox}>

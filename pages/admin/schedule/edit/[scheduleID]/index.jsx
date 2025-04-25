@@ -41,12 +41,12 @@ const AdminEditDetailSchedulePage = () => {
   ];
 
   useEffect(() => {
-    if (!router.isReady || !scheduleID) return;
+    if (!router.isReady || !scheduleID) {
+      return;
+    }
 
-    // 1. Set schedule ID
     setScheduleId(Number(scheduleID));
 
-    // 2. Fetch all classes + classes already in this schedule
     const fetchData = async () => {
       const classData = await classHandler.getAllClasses();
       const scheduleData = await scheduleHandler.getSchedule(scheduleID);
@@ -83,15 +83,11 @@ const AdminEditDetailSchedulePage = () => {
     }));
 
   const handleAddClass = () => {
-    console.log("all: ", allClasses);
-    console.log("selected: ", selectedClassId);
     const cls = allClasses.find(
       (c) =>
         c.class_number === selectedClassId.classID &&
         c.section === selectedClassId.section
     );
-
-    console.log("Cls: ", cls);
 
     let hasOverlap = false;
     selectedClasses.forEach((element) => {
@@ -155,8 +151,6 @@ const AdminEditDetailSchedulePage = () => {
 
     const result = await scheduleHandler.editSchedule(scheduleId, data);
 
-    console.log(result);
-
     if (result.error) {
       toast.error(result.error.response.data);
       return;
@@ -200,7 +194,7 @@ const AdminEditDetailSchedulePage = () => {
             <IconButton
               icon={<RiAddLargeLine />}
               text="Add Class"
-              handleClick={() => setShowModal(true)}
+              onClick={() => setShowModal(true)}
               disabled={selectedClasses.length >= 8}
               width={200}
             />

@@ -35,20 +35,16 @@ const ScheduleView = ({ schedule }) => {
     currentTime = addMinutes(currentTime, 15);
   }
 
-  // Find the closest 15-minute time slot for a given time
+  // Classes have 15 minute intervals
   const findNearestTimeSlot = (timeStr) => {
     try {
-      // Parse the time
       const time = parse(timeStr, "HH:mm", new Date());
 
-      // Get hours and minutes
       const hours = getHours(time);
       const minutes = getMinutes(time);
 
-      // Round to nearest 15 minute increment
       const roundedMinutes = Math.floor(minutes / 15) * 15;
 
-      // Create a new date with rounded minutes
       const roundedTime = setMinutes(
         parse(`${hours}:00`, "H:mm", new Date()),
         roundedMinutes
@@ -56,23 +52,17 @@ const ScheduleView = ({ schedule }) => {
 
       return format(roundedTime, "HH:mm");
     } catch (e) {
-      console.error("Error finding nearest slot for:", timeStr, e);
+      toast.error("Error finding nearest slot for:", timeStr, e);
       return timeStr;
     }
   };
 
-  const getClassesByDay = (day) => {
-    // For now, all days return the same schedule
-    return schedule;
-  };
-
   const renderDayColumn = (day) => {
-    const classes = getClassesByDay(day);
+    const classes = schedule;
     const elements = [];
     let index = 0;
-    const processedSlots = new Set(); // Keep track of which slots we've handled
+    const processedSlots = new Set();
 
-    // Pre-calculate the nearest time slot for each class and organize by time slot
     const classesByTimeSlot = {};
     classes.forEach((cls) => {
       const nearestSlot = findNearestTimeSlot(cls.class.time_start);
@@ -85,12 +75,11 @@ const ScheduleView = ({ schedule }) => {
     while (index < timeSlots.length) {
       const currentSlot = timeSlots[index];
 
-      // Check if a class starting at this time slot
       if (
         classesByTimeSlot[currentSlot] &&
         classesByTimeSlot[currentSlot].length > 0
       ) {
-        const clsItem = classesByTimeSlot[currentSlot][0]; // Get the first class at this time
+        const clsItem = classesByTimeSlot[currentSlot][0];
         const { class: cls } = clsItem;
 
         try {
@@ -119,7 +108,6 @@ const ScheduleView = ({ schedule }) => {
             </div>
           );
 
-          // Mark this time slot as processed
           processedSlots.add(currentSlot);
           index += slotCount;
         } catch (error) {

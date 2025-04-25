@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Layout from "../../src/components/layout/Layout";
-import accountManager from "@/src/utils/Managers/AccountManager.js";
 
 const StudentHomePage = () => {
   return (

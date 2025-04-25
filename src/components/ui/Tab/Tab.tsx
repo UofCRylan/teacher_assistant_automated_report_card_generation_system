@@ -22,7 +22,6 @@ const Tab: React.FC<TabProps> = ({
   activeIcon,
 }) => {
   const location = usePathname();
-  // const goTo = useHref(href);
   const isActive = (function checkActive(root) {
     if (!location) {
       return false;

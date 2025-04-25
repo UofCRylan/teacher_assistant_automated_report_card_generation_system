@@ -72,7 +72,6 @@ const AdminScheduleCreatePage = () => {
     }));
 
   const handleAddClass = () => {
-    console.log("selected classes: ", selectedClassId);
     const cls = classes.find(
       (c) =>
         c.class_number === selectedClassId.classID &&
@@ -81,9 +80,7 @@ const AdminScheduleCreatePage = () => {
 
     let hasOverlap = false;
     // Check for overlap
-    console.log("This class: ", cls);
     selectedClasses.forEach((element) => {
-      console.log("Check overlap with: ", element);
       if (
         overlap(
           cls.time_start,
@@ -143,7 +140,7 @@ const AdminScheduleCreatePage = () => {
     };
 
     const result = await scheduleHandler.createSchedule(scheduleId, data);
-    console.log("Result: ", result);
+
     if (result.error) {
       toast.error(result.error.response.data);
       return;

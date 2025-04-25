@@ -88,6 +88,7 @@ const AdminCreateClassPage = () => {
         value: teacher.id,
         label: teacher.full_name,
       }));
+
       setTeacherOptions(formatted);
     } catch (error) {
       toast.error(error);
@@ -97,7 +98,7 @@ const AdminCreateClassPage = () => {
     }
   };
 
-  const fetchAvailableClassrooms = async (start, end) => {
+  const fetchAvailableClassrooms = async () => {
     setClassroomLoading(true);
     try {
       const result = await classHandler.getClassrooms();
@@ -109,7 +110,7 @@ const AdminCreateClassPage = () => {
 
       setClassroomOptions(formatted);
     } catch (err) {
-      console.error("Failed to fetch classrooms", err);
+      toast.error("Failed to fetch classrooms" + err);
       setClassroomOptions([]);
     } finally {
       setClassroomLoading(false);

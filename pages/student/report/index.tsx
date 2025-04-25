@@ -53,7 +53,7 @@ const StudentReportPage = () => {
                       cls.grade_status ? styles.success : styles.pending
                     }
                   >
-                    {cls.grade_status ? "✓ Yes" : "✗ Not yet"}
+                    {cls.grade_status ? "Yes" : "Not yet"}
                   </span>
                 </p>
                 <p>
@@ -63,13 +63,14 @@ const StudentReportPage = () => {
                       cls.feedback_status ? styles.success : styles.pending
                     }
                   >
-                    {cls.feedback_status ? "✓ Yes" : "✗ Not yet"}
+                    {cls.feedback_status ? "Yes" : "Not yet"}
                   </span>
                 </p>
                 <p>
                   Ready for Report:{" "}
                   <span className={isReady ? styles.success : styles.pending}>
-                    {isReady ? "✅ Ready" : "⏳ Waiting"}
+                    {isReady ? "Ready" : "Waiting"}{" "}
+                    {/* TODO: Add remix icons */}
                   </span>
                 </p>
               </div>

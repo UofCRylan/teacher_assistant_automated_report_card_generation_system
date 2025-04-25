@@ -5,18 +5,16 @@ import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
 import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler.ts";
 import Layout from "../../../src/components/layout/Layout";
 import VSpace from "../../../src/components/ui/Space/VSpace";
+import { toast } from "react-toastify";
 
 const StudentAttendancePage = () => {
   const [weekOffset, setWeekOffset] = useState(0);
   const [classes, setClasses] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
 
-  // Fetch student classes and attendance data
   useEffect(() => {
-    // Replace with actual API calls
     const fetchStudentData = async () => {
       try {
-        // Mock data - replace with actual API calls
         const classesResponse = await scheduleHandler.getUserSchedule();
         const attendanceResponse =
           await attendanceHandler.getAttendanceRecords();
@@ -24,7 +22,7 @@ const StudentAttendancePage = () => {
         setClasses(classesResponse.data.classes);
         setAttendanceRecords(attendanceResponse.data);
       } catch (error) {
-        console.error("Error fetching student data:", error);
+        toast.error("Error fetching student data:", error);
       }
     };
 
