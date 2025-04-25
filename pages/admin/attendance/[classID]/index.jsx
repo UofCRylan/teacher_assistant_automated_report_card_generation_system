@@ -5,13 +5,14 @@ import classHandler from "@/src/utils/Handlers/ClassHandler";
 import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler";
 import styles from "./edit.module.css";
 import { useRouter } from "next/router";
+import { parseISO, format } from "date-fns";
 import Button from "../../../../src/components/ui/Button/Button";
 
 const AdminEditAttendancePage = () => {
   const attendanceOptions = [
-    { value: "present", label: "Present" },
-    { value: "absent", label: "Absent" },
-    { value: "late", label: "Late" },
+    { value: "Present", label: "Present" },
+    { value: "Absent", label: "Absent" },
+    { value: "Late", label: "Late" },
   ];
   const router = useRouter();
 
@@ -19,14 +20,11 @@ const AdminEditAttendancePage = () => {
   const [classInfo, setClassInfo] = useState(undefined);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
 
-  const currentDate = new Date().toISOString().split("T")[0];
+  const currentDate = format(new Date(), "yyyy-MM-dd");
 
   const formatDateForDisplay = (dateString) => {
-    const date = new Date(dateString);
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${month}-${day}-${year}`;
+    const date = parseISO(dateString);
+    return format(date, "MM-dd-yyyy");
   };
 
   useEffect(() => {

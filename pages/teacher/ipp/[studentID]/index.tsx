@@ -13,7 +13,6 @@ const TeacherIppDetailPage = () => {
   const [ipp, setIpp] = useState(undefined);
   const [showModal, setShowModal] = useState(false);
 
-  // Edit fields
   const [goals, setGoals] = useState("");
   const [e_a, setEA] = useState("");
   const [s_d, setSD] = useState("");

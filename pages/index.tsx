@@ -28,6 +28,14 @@ const Home = () => {
   return (
     <div id="container">
       <div id="sign-in-container">
+        <img
+          src="/assets/images/logo.png"
+          width={200}
+          height={80}
+          alt="Logo"
+          style={{ marginLeft: "auto", marginRight: "auto" }}
+        />
+        <VSpace space={30} />
         <h1>Sign In Page</h1>
         {error.status && error.status !== 200 && (
           <>

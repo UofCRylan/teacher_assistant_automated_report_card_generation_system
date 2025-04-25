@@ -1,11 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../../src/components/layout/Layout";
+import ScheduleView from "@/src/components/pages/general/ScheduleView.tsx";
+import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler";
 
 const StudentHomePage = () => {
+  const [schedule, setSchedule] = useState(undefined);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await scheduleHandler.getUserSchedule();
+
+      if (result.status === 200) {
+        setSchedule(result.data.classes);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
-    <div>
-      <h1>StudentHome</h1>
-    </div>
+    <main>
+      <h1>Home</h1>
+      {schedule !== undefined ? (
+        <ScheduleView schedule={schedule} />
+      ) : (
+        <span>Loading...</span>
+      )}
+    </main>
   );
 };
 

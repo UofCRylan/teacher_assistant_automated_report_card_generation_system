@@ -7,7 +7,6 @@ const AttendanceTable = ({ classes, attendanceRecords, weekOffset }) => {
   const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 }); // Monday
   const currentWeekStart = addWeeks(startOfCurrentWeek, weekOffset);
 
-  // Generate array of weekdays for the selected week
   const weekdays = (function daysWeek() {
     const result = [];
 

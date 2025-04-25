@@ -70,6 +70,29 @@ class ClassHandler {
     }
   });
 
+  getAllScheduledClasses = accountManager.requireAuth(async () => {
+    try {
+      const response = await axios.get(
+        `http://127.0.0.1:8000/api/class/scheduled`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accountManager.userToken}`,
+          },
+        }
+      );
+
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
+    }
+  });
+
   getClass = accountManager.requireAuth(
     async (id: number, section_id: number) => {
       try {

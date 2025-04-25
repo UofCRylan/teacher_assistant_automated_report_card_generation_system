@@ -9,8 +9,8 @@ import {
   RiGraduationCapLine,
   RiGroupFill,
   RiGroupLine,
-  // RiHome5Fill,
-  // RiHome5Line,
+  RiHome5Fill,
+  RiHome5Line,
   RiTimeFill,
   RiTimeLine,
 } from "@remixicon/react";
@@ -59,24 +59,24 @@ const TabManager = {
     },
     t: {
       tabs: [
-        // {
-        //   label: "Home",
-        //   icon: RiHome5Line,
-        //   href: "/teacher",
-        //   root: true,
-        //   active: {
-        //     icon: RiHome5Fill,
-        //   },
-        // },
         {
-          label: "Schedule",
-          icon: RiCalendar2Line,
-          href: "/teacher/schedule",
-          root: false,
+          label: "Home",
+          icon: RiHome5Line,
+          href: "/teacher",
+          root: true,
           active: {
-            icon: RiCalendar2Fill,
+            icon: RiHome5Fill,
           },
         },
+        // {
+        //   label: "Schedule",
+        //   icon: RiCalendar2Line,
+        //   href: "/teacher/schedule",
+        //   root: false,
+        //   active: {
+        //     icon: RiCalendar2Fill,
+        //   },
+        // },
         {
           label: "Grades",
           icon: RiGraduationCapLine,
@@ -117,24 +117,24 @@ const TabManager = {
     },
     s: {
       tabs: [
-        // {
-        //   label: "Home",
-        //   icon: RiHome5Line,
-        //   href: "/student",
-        //   root: true,
-        //   active: {
-        //     icon: RiHome5Fill,
-        //   },
-        // },
         {
-          label: "Schedule",
-          icon: RiCalendar2Line,
-          href: "/student/schedule",
-          root: false,
+          label: "Home",
+          icon: RiHome5Line,
+          href: "/student",
+          root: true,
           active: {
-            icon: RiCalendar2Fill,
+            icon: RiHome5Fill,
           },
         },
+        // {
+        //   label: "Schedule",
+        //   icon: RiCalendar2Line,
+        //   href: "/student/schedule",
+        //   root: false,
+        //   active: {
+        //     icon: RiCalendar2Fill,
+        //   },
+        // },
         {
           label: "My Classes",
           icon: RiBookShelfLine,

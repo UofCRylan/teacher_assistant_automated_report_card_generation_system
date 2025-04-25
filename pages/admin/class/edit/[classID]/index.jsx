@@ -43,7 +43,7 @@ const AdminEditClassDetailedPage = () => {
 
   const endTimeOptions = useMemo(() => {
     if (!beginTime) return [];
-    const nextStart = addMinutes(new Date(`1970-01-01T${beginTime.value}`), 15);
+    const nextStart = addMinutes(new Date(`1970-01-01T${beginTime.value}`), 15); // TODO
     const formattedNextStart = nextStart.toTimeString().substring(0, 5);
     return generateTimeOptions(formattedNextStart);
   }, [beginTime]);

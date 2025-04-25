@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
-import AdminClassView from "@/src/components/pages/general/AdminClassView.tsx";
+import AdminScheduledClassView from "@/src/components/pages/general/AdminScheduledClassView.tsx";
 import Layout from "@/src/components/layout/Layout";
 
 const AdminAttendancePage = () => {
@@ -8,7 +8,7 @@ const AdminAttendancePage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await classHandler.getAllClasses();
+      const result = await classHandler.getAllScheduledClasses();
 
       if (result.status === 200) {
         setClasses(result.data);
@@ -22,7 +22,7 @@ const AdminAttendancePage = () => {
     <div style={{ display: "flex", justifyContent: "center" }}>
       {classes !== undefined ? (
         <main style={{ width: 900 }}>
-          <AdminClassView classes={classes} link={"attendance"} />
+          <AdminScheduledClassView classes={classes} link={"attendance"} />
         </main>
       ) : (
         <span>Loading...</span>

@@ -4,6 +4,7 @@ import ippHandler from "@/src/utils/Handlers/IppHandler";
 import styles from "./StudentIppPage.module.css";
 import Layout from "@/src/components/layout/Layout";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 const StudentIppPage = () => {
   const [ipps, setIpps] = useState(undefined);
@@ -16,7 +17,11 @@ const StudentIppPage = () => {
         const result = await ippHandler.getStudentsIpp(user.data.id);
 
         if (result.status === 200) {
+          toast.success("Successfully created ipp");
           setIpps(result.data);
+        }
+        if (result.error) {
+          toast.error("Unable to create ipp", result.error);
         }
       }
     };

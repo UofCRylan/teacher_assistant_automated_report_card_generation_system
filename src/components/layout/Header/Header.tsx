@@ -62,8 +62,8 @@ function Header() {
           <div>
             <div>
               <img
-                src="/assets/images/uoftlogo.png"
-                height={60}
+                src="/assets/images/logo.png"
+                height={50}
                 width={150}
                 alt="Logo"
               />
