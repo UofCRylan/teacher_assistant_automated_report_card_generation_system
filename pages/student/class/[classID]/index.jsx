@@ -10,7 +10,6 @@ import classHandler from "@/src/utils/Handlers/ClassHandler";
 import accountManager from "@/src/utils/Managers/AccountManager.js";
 import gradeHandler from "@/src/utils/Handlers/GradeHandler.ts";
 import feedbackHandler from "@/src/utils/Handlers/feedbackHandler.ts";
-import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
 import { toast } from "react-toastify";
 import "@/src/styles/student/classes.css";
 
@@ -207,7 +206,6 @@ const StudentClassPage = () => {
                 </>
               )}
             </div>
-            <MessageAlert />
           </div>
         </>
       ) : (

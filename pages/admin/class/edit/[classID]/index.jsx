@@ -132,11 +132,17 @@ const AdminEditClassDetailedPage = () => {
     };
 
     try {
-      const result = await classHandler.createClass(payload);
+      const result = await classHandler.editClass(payload);
+
+      if (result.error) {
+        toast.error(result.error.response.data);
+        return;
+      }
+
       toast.success(result.data.message);
       router.push("/admin/class");
     } catch (error) {
-      toast.error(error); // TODO
+      toast.error(error);
     }
   };
 
@@ -220,7 +226,7 @@ const AdminEditClassDetailedPage = () => {
         </div>
         <VSpace space={40} />
         <div>
-          <Button label="Update class" onClick={handleEdit} />
+          <Button label="Update class" onClick={() => handleEdit()} />
         </div>
       </main>
     </div>

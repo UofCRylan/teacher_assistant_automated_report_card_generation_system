@@ -86,8 +86,6 @@ const AdminEditSchedulePage = () => {
             </div>
           ))}
       </div>
-
-      {/* Modal */}
       {isModalOpen && selectedSchedule && (
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div

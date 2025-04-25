@@ -6,13 +6,13 @@ import ScheduleView from "@/src/components/pages/general/ScheduleView.tsx";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
 import Layout from "@/src/components/layout/Layout";
-import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
 import IconButton from "../../../../src/components/ui/Button/IconButton";
 import { RiAddLargeLine, RiDeleteBinLine } from "@remixicon/react";
 import { toast } from "react-toastify";
 import Text from "@/src/components/ui/Input/Text.tsx";
 import VSpace from "../../../../src/components/ui/Space/VSpace";
 import styles from "@/src/styles/admin/schedule/edit.module.css";
+import { useRouter } from "next/router";
 
 const AdminScheduleCreatePage = () => {
   const [scheduleId, setScheduleId] = useState(null);
@@ -21,6 +21,7 @@ const AdminScheduleCreatePage = () => {
   const [selectedClasses, setSelectedClasses] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState(null);
+  const router = useRouter();
 
   const gradeOptions = [
     { value: 1, label: "Grade 1" },
@@ -49,7 +50,7 @@ const AdminScheduleCreatePage = () => {
   const scheduleOptions = (function setupSchedule() {
     let result = [];
 
-    for (let i = 0; i < 101; i++) {
+    for (let i = 0; i < 100; i++) {
       result.push({
         value: i + 1,
         label: `Schedule ${i + 1}`,
@@ -58,12 +59,15 @@ const AdminScheduleCreatePage = () => {
     return result;
   })();
 
-  const availableClassOptions = allClasses
+  const availableClassOptions = classes
     .filter(
-      (cls) => !selectedClasses.find((s) => s.class_id === cls.class_number)
+      (cls) =>
+        !selectedClasses.find(
+          (s) => s.class_id === cls.class_number && s.section == cls.section
+        )
     )
     .map((cls) => ({
-      value: cls.class_number,
+      value: { classID: cls.class_number, section: cls.section },
       label: `${cls.class_name} (${cls.time_start} - ${cls.time_end})`,
     }));
 
@@ -112,11 +116,15 @@ const AdminScheduleCreatePage = () => {
   };
 
   const handleRemoveClass = (classId, section) => {
-    setSelectedClasses(
-      selectedClasses.filter(
-        (cls) => cls.class_id !== classId && cls.section !== section
-      )
-    );
+    let keepClasses = [];
+
+    selectedClasses.forEach((cls) => {
+      if (cls.class_id !== classId || cls.section !== section) {
+        keepClasses.push(cls);
+      }
+    });
+
+    setSelectedClasses(keepClasses);
   };
 
   const handleSave = async () => {
@@ -135,12 +143,14 @@ const AdminScheduleCreatePage = () => {
     };
 
     const result = await scheduleHandler.createSchedule(scheduleId, data);
+    console.log("Result: ", result);
     if (result.error) {
       toast.error(result.error.response.data);
       return;
     }
 
-    toast.success(result.data.message);
+    toast.success(result.data);
+    router.push("/admin/schedule");
   };
 
   const overlap = (time1_start, time1_end, time2_start, time2_end) => {
@@ -177,7 +187,7 @@ const AdminScheduleCreatePage = () => {
             <IconButton
               icon={<RiAddLargeLine />}
               text="Add Class"
-              handleClick={() => setShowModal(true)}
+              onClick={() => setShowModal(true)}
               disabled={selectedClasses.length >= 8}
               width={200}
             />
@@ -234,7 +244,6 @@ const AdminScheduleCreatePage = () => {
           />
         </div>
       </Modal>
-      <MessageAlert />
     </div>
   );
 };

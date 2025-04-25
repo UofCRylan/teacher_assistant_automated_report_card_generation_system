@@ -70,8 +70,8 @@ const StudentIppDetailPage = () => {
               <h2>IPP Details</h2>
               <div className={styles.grid}>
                 <Info label="Goal" value={ipp.goals} />
-                <Info label="SD" value={ipp.s_d} />
-                <Info label="EA" value={ipp.e_a} />
+                <Info label="Specified Disability" value={ipp.s_d} />
+                <Info label="Educational Aids" value={ipp.e_a} />
               </div>
             </div>
           </div>

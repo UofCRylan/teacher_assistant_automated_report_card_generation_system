@@ -22,7 +22,7 @@ class ScheduleHandler {
     }
   );
 
-  updateSchedule = accountManager.requireAuth(
+  editSchedule = accountManager.requireAuth(
     async (scheduleID: number, data) => {
       try {
         const response = await axios.put(

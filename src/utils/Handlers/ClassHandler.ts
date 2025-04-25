@@ -26,24 +26,29 @@ class ClassHandler {
     }
   });
 
-  editClass = accountManager.requireAuth(
-    async (id: number, section_id: number) => {
-      try {
-        const response = await axios.put(
-          `http://127.0.0.1:8000/api/class/${id}?section=${section_id}`
-        );
+  editClass = accountManager.requireAuth(async (data: object) => {
+    try {
+      const response = await axios.put(
+        `http://127.0.0.1:8000/api/class/`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accountManager.userToken}`,
+          },
+        }
+      );
 
-        return {
-          status: 200,
-          data: response.data,
-        };
-      } catch (error) {
-        return {
-          error: error,
-        };
-      }
+      return {
+        status: 200,
+        data: response.data,
+      };
+    } catch (error) {
+      return {
+        error: error,
+      };
     }
-  );
+  });
 
   getAllClasses = accountManager.requireAuth(async () => {
     try {

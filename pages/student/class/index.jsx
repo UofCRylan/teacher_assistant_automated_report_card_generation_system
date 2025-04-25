@@ -9,20 +9,9 @@ import "@/src/components/pages/student/classes/Subject-Container.css";
 const StudentClasses = () => {
   const [classes, setClasses] = useState(undefined);
 
-  const subjects = [
-    "Math",
-    "Science",
-    "English",
-    "Social Studies",
-    "Gym",
-    "Music",
-    "Homeroom",
-  ];
-
   useEffect(() => {
     const fetchData = async () => {
       const data = await scheduleHandler.getUserSchedule();
-      console.log(data);
       setClasses(data.data.classes);
     };
 

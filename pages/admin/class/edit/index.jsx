@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import AdminClassView from "@/src/components/pages/general/AdminClassView.tsx";
 import Layout from "@/src/components/layout/Layout";
+import { toast } from "react-toastify";
 
 const AdminEditClassPage = () => {
   const [classes, setClasses] = useState(undefined);
@@ -10,9 +11,11 @@ const AdminEditClassPage = () => {
     const fetchData = async () => {
       const result = await classHandler.getAllClasses();
 
-      if (result.status === 200) {
-        setClasses(result.data);
+      if (result.error) {
+        toast.error(result.error.response.data);
       }
+
+      setClasses(result.data);
     };
 
     fetchData();

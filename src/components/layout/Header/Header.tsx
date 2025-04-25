@@ -13,6 +13,7 @@ import Button from "../../ui/Button/Button";
 import VSpace from "../../ui/Space/VSpace";
 import accountManager from "@/src/utils/Managers/AccountManager";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
 function Header() {
   const location = usePathname();
@@ -36,11 +37,11 @@ function Header() {
     async function getUserInfo() {
       const result = await accountManager.getUserInfo();
 
-      if (result) {
-        console.log("Setting user as: ", result.data);
-
-        setUser(result.data);
+      if (result.error) {
+        toast.error(result.error.response.data);
       }
+
+      setUser(result.data);
     }
     getUserInfo();
   }, []);

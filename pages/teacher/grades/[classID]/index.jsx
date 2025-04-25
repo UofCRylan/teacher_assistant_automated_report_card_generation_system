@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { ToastContainer, toast, Bounce } from "react-toastify";
+import { toast } from "react-toastify";
 import Select from "react-select";
 import { useRouter } from "next/router";
-import { RiSave3Fill } from "@remixicon/react";
 import Layout from "../../../../src/components/layout/Layout";
 import styles from "./edit.module.css";
 
@@ -194,18 +193,6 @@ const TeacherEditGradePage = () => {
           </div>
         ))}
       </div>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={true}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        pauseOnHover
-        theme="light"
-        transition={Bounce}
-      />
     </div>
   );
 };

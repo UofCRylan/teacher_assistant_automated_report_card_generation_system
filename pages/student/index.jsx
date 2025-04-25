@@ -3,10 +3,6 @@ import Layout from "../../src/components/layout/Layout";
 import accountManager from "@/src/utils/Managers/AccountManager.js";
 
 const StudentHomePage = () => {
-  useEffect(() => {
-    console.log(accountManager.getUserInfo());
-  }, []);
-
   return (
     <div>
       <h1>StudentHome</h1>

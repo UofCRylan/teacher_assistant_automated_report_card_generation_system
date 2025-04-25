@@ -8,12 +8,16 @@ const AttendanceTable = ({ classes, attendanceRecords, weekOffset }) => {
   const currentWeekStart = addWeeks(startOfCurrentWeek, weekOffset);
 
   // Generate array of weekdays for the selected week
-  const weekdays = Array.from({ length: 5 }, (_, i) => {
-    // TODO
-    return addDays(new Date(currentWeekStart), i);
-  });
+  const weekdays = (function daysWeek() {
+    const result = [];
 
-  // Helper to get attendance status for a class on a specific date
+    for (let i = 0; i < 5; i++) {
+      result.push(addDays(new Date(currentWeekStart), i));
+    }
+    return result;
+  })();
+
+  // Get attendance status for a class on a specific date
   const getAttendanceStatus = (classNumber, section, date) => {
     const formattedDate = format(date, "yyyy-MM-dd");
 
@@ -26,7 +30,7 @@ const AttendanceTable = ({ classes, attendanceRecords, weekOffset }) => {
 
     if (!record) return "/";
 
-    // Convert full status to single letter
+    // Convert attendance status to single letter
     switch (record.status) {
       case "Present":
         return "P";
@@ -39,7 +43,7 @@ const AttendanceTable = ({ classes, attendanceRecords, weekOffset }) => {
     }
   };
 
-  // Helper to count total absences and lates for a class
+  // Count total absences and lates for a class
   const countAttendanceType = (classNumber, section, type) => {
     const fullType = type === "A" ? "Absent" : "Late";
 

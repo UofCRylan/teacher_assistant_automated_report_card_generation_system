@@ -7,7 +7,6 @@ import Button from "../../../../src/components/ui/Button/Button";
 import { generateTimeOptions } from "@/src/utils/Handlers/TimeHandler.ts";
 import { addMinutes } from "date-fns";
 import VSpace from "../../../../src/components/ui/Space/VSpace";
-import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import teacherHandler from "@/src/utils/Handlers/TeacherHandler.ts";
 import { useRouter } from "next/router";
@@ -259,7 +258,6 @@ const AdminCreateClassPage = () => {
         <div>
           <Button label="Create class" onClick={handleCreate} />
         </div>
-        <MessageAlert />
       </main>
     </div>
   );

@@ -76,7 +76,6 @@ const StudentReportPage = () => {
             );
           })}
       </div>
-
       <div className={styles.reportSection}>
         {classes !== undefined && classes.status ? (
           <>

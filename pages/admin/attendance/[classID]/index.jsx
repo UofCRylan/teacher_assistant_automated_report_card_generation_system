@@ -21,19 +21,6 @@ const AdminEditAttendancePage = () => {
   const [classInfo, setClassInfo] = useState(undefined);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
 
-  // Class information from the sample data
-  // const classInfo = {
-  //   class_number: 1,
-  //   section: 1,
-  //   subject: "Homeroom",
-  //   time_start: "08:00",
-  //   time_end: "08:15",
-  //   class_name: "Grade 1A Homeroom",
-  //   room_number: "101",
-  //   building: "A",
-  //   teacher_name: "Ethan Anderson",
-  // };
-
   // Current date for attendance in YYYY-MM-DD format
   const currentDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
 

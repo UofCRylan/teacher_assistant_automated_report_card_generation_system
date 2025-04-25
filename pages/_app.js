@@ -1,3 +1,4 @@
+import MessageAlert from "@/src/components/ui/Alerts/MessageAlert";
 import "@/src/styles/global.css";
 import { Roboto } from "next/font/google";
 
@@ -13,6 +14,7 @@ export default function App({ Component, pageProps }) {
           font-family: ${roboto.style.fontFamily};
         }
       `}</style>
+      <MessageAlert />
       {getLayout(<Component {...pageProps} />)}
     </>
   );

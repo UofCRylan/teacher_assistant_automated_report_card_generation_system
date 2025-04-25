@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
 import TeacherClassView from "@/src/components/pages/general/TeacherClassView.tsx";
+
 import Layout from "@/src/components/layout/Layout";
 
 const TeacherAttendancePage = () => {

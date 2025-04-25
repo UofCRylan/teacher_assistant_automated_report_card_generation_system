@@ -7,7 +7,6 @@ import ScheduleView from "@/src/components/pages/general/ScheduleView.tsx";
 import classHandler from "@/src/utils/Handlers/ClassHandler.ts";
 import scheduleHandler from "@/src/utils/Handlers/ScheduleHandler.ts";
 import Layout from "@/src/components/layout/Layout";
-import MessageAlert from "@/src/components/ui/Alerts/MessageAlert.tsx";
 import { toast } from "react-toastify";
 import Text from "@/src/components/ui/Input/Text.tsx";
 import IconButton from "../../../../../src/components/ui/Button/IconButton";
@@ -79,7 +78,7 @@ const AdminEditDetailSchedulePage = () => {
       (cls) => !selectedClasses.find((s) => s.class_id === cls.class_number)
     )
     .map((cls) => ({
-      value: cls.class_number,
+      value: { classID: cls.class_number, section: cls.section },
       label: `${cls.class_name} (${cls.time_start} - ${cls.time_end})`,
     }));
 
@@ -128,11 +127,15 @@ const AdminEditDetailSchedulePage = () => {
   };
 
   const handleRemoveClass = (classId, section) => {
-    setSelectedClasses(
-      selectedClasses.filter(
-        (cls) => cls.class_id !== classId && cls.section !== section
-      )
-    );
+    let keepClasses = [];
+
+    selectedClasses.forEach((cls) => {
+      if (cls.class_id !== classId || cls.section !== section) {
+        keepClasses.push(cls);
+      }
+    });
+
+    setSelectedClasses(keepClasses);
   };
 
   const handleSave = async () => {
@@ -150,14 +153,17 @@ const AdminEditDetailSchedulePage = () => {
       classes: payload,
     };
 
-    const result = await scheduleHandler.updateSchedule(scheduleId, data);
+    const result = await scheduleHandler.editSchedule(scheduleId, data);
+
+    console.log(result);
 
     if (result.error) {
       toast.error(result.error.response.data);
       return;
     }
 
-    toast.success(result.data.message);
+    toast.success(result.data);
+    router.push("/admin/schedule");
   };
 
   const overlap = (time1_start, time1_end, time2_start, time2_end) => {
@@ -251,7 +257,6 @@ const AdminEditDetailSchedulePage = () => {
           />
         </div>
       </Modal>
-      <MessageAlert />
     </div>
   );
 };

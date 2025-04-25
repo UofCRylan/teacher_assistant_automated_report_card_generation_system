@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "@/src/styles/teacher/reports/index.module.css";
-import Modal from "@/src/components/ui/Modal/Modal";
 import Layout from "@/src/components/layout/Layout";
-import { RiPencilLine } from "@remixicon/react";
 import reportHandler from "@/src/utils/Handlers/ReportHandler";
 import { useRouter } from "next/router";
 import feedbackHandler from "@/src/utils/Handlers/FeedbackHandler";
@@ -102,7 +100,6 @@ const TeacherReportsDetailPage = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.header}>Create Report Cards</h1>
-
       <div className={styles.actions}>
         {/* <button className={styles.button}>Generate Feedback</button> */}
         {/* <button className={styles.button}>Generate Report Card</button> */}

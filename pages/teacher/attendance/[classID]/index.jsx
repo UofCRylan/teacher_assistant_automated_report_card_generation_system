@@ -6,7 +6,7 @@ import attendanceHandler from "@/src/utils/Handlers/AttendanceHandler";
 import styles from "./edit.module.css";
 import { useRouter } from "next/router";
 import { parseISO, format } from "date-fns";
-import { ToastContainer, toast, Bounce } from "react-toastify";
+import { toast } from "react-toastify";
 import Button from "../../../../src/components/ui/Button/Button";
 
 const TeacherEditAttendancePage = () => {
@@ -210,18 +210,6 @@ const TeacherEditAttendancePage = () => {
               </div>
             );
           })}
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={false}
-          rtl={false}
-          pauseOnFocusLoss
-          pauseOnHover
-          theme="light"
-          transition={Bounce}
-        />
       </div>
     </div>
   );
